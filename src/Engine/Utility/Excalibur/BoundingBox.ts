@@ -52,7 +52,7 @@ export class BoundingBox {
         return this.left <= x && this.top <= y && this.bottom >= y && this.right >= x;
     }
 
-    public containsBoundingBox(bounds:BoundingBox):boolean {
+    public containsBoundingBox(bounds: BoundingBox): boolean {
         return this.left <= bounds.left && this.top <= bounds.top && bounds.bottom <= this.bottom && bounds.right <= this.right;
     }
 }

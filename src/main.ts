@@ -1,8 +1,8 @@
 import './style.css';
-import {ParticleType} from "./Engine/Particle/ParticleType.ts";
 import {ObviousNonsenseBehaviourManager} from "./Engine/Behaviour/ObviousNonsenseBehaviourManager.ts";
 import {CanvasRenderer} from "./Engine/Grid/CanvasRenderer.ts";
 import {World} from "./Engine/Grid/World.ts";
+import {ParticleType} from "./Engine/Particle/ParticleType.ts";
 import {Simulator} from "./Engine/Simulator.ts";
 import {BoundingBox} from "./Engine/Utility/Excalibur/BoundingBox.ts";
 
@@ -19,7 +19,7 @@ if (!ctx) {
 canvas.width = window.innerWidth - 20;
 canvas.height = window.innerHeight - 20;
 
-const squareWorldSize: number = 100;
+const squareWorldSize: number = 150;
 
 const bounds = BoundingBox.fromDimension(squareWorldSize, squareWorldSize);
 const world = new World(bounds, 10); //TODO add outer bounds
@@ -44,6 +44,7 @@ let then: number = 0;
 let elapsed: number = 0;
 
 const centerX = Math.round(squareWorldSize / 2);
+const centerOffset: number = 10;
 
 const step = () => {
     const now = Date.now();
@@ -59,7 +60,7 @@ const step = () => {
 
         world.iterateParticles((_particle, coordinate) => {
             const {x, y} = coordinate;
-            if (x > centerX - 2 && x < centerX + 2 && y === 1) {
+            if (x > centerX - centerOffset && x < centerX + centerOffset && y === 1) {
                 world.setParticle(coordinate, ParticleType.Sand);
             }
         }, true);

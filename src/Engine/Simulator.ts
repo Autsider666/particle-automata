@@ -1,7 +1,7 @@
-import {Chunk} from "./Grid/Chunk.ts";
-import {BehaviourManager} from "./Behaviour/BehaviourManager.ts";
-import {World} from "./Grid/World.ts";
 import {Constructor} from "../Utility/Type/Constructor.ts";
+import {BehaviourManager} from "./Behaviour/BehaviourManager.ts";
+import {Chunk} from "./Grid/Chunk.ts";
+import {World} from "./Grid/World.ts";
 
 export class Simulator {
     private readonly chunkManagers = new Map<Chunk, BehaviourManager>();

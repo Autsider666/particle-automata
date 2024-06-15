@@ -1,11 +1,4 @@
-export type ColorVarianceConfig = { min: number, max: number } | { value: number }
-
-export type ColorVariance = {
-    hue?: ColorVarianceConfig,
-    saturation?: ColorVarianceConfig,
-    lightness?: ColorVarianceConfig,
-    alpha?: ColorVarianceConfig,
-};
+import {Color, ColorVariance} from "../../Utility/Color.ts";
 
 const genericColorVariance: ColorVariance = {
     hue: {value: 0},
@@ -73,7 +66,16 @@ const particleTypes = {
 const particleTypesButClones = {} as Record<ParticleType, ParticleTypeData>;
 for (const key of Object.keys(particleTypes) as ParticleType[]) {
     Object.defineProperty(particleTypesButClones, key, {
-        get: ():ParticleTypeData => ({...particleTypes[key]})
+        get: (): ParticleTypeData => {
+            const newBase = {...particleTypes[key]};
+
+            const colorVariance = newBase.colorVariance;
+            if (colorVariance) {
+                newBase.color = Color.varyColor(newBase.color, colorVariance) as typeof newBase.color;
+            }
+
+            return newBase;
+        }
     });
 }
 

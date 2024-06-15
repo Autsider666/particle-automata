@@ -1,6 +1,6 @@
+import {WorldCoordinate} from "../Grid/World.ts";
 import {Particle} from "../Particle/Particle.ts";
 import {BehaviourManager} from "./BehaviourManager.ts";
-import {WorldCoordinate} from "../Grid/World.ts";
 
 export class SimpleBehaviourManager extends BehaviourManager {
     updateParticle(particle: Particle, coordinate: WorldCoordinate): void {

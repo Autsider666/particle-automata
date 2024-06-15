@@ -1,7 +1,7 @@
-import {Particle} from "../Particle/Particle.ts";
-import {Coordinate, Traversal} from "../../Utility/Type/Dimensional.ts";
 import type {Direction} from "../../Utility/Type/Dimensional.ts";
+import {Coordinate, Traversal} from "../../Utility/Type/Dimensional.ts";
 import {Distinct} from "../../Utility/Type/Distinct.ts";
+import {Particle} from "../Particle/Particle.ts";
 import {BoundingBox} from "../Utility/Excalibur/BoundingBox";
 import {Chunk} from "./Chunk.ts";
 

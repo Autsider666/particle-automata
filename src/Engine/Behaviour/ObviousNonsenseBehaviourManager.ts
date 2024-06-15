@@ -1,7 +1,7 @@
-import {Particle} from "../Particle/Particle.ts";
 import {Direction, Traversal} from "../../Utility/Type/Dimensional.ts";
 import {Chunk} from "../Grid/Chunk.ts";
 import {World, WorldCoordinate} from "../Grid/World.ts";
+import {Particle} from "../Particle/Particle.ts";
 import {ParticleType} from "../Particle/ParticleType.ts";
 import {BehaviourManager} from "./BehaviourManager.ts";
 
@@ -40,7 +40,6 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
         {dX: +1, dY: +1},
         {dX: -1, dY: +1},
     ];
-
 
 
     constructor(

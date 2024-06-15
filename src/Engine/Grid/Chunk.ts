@@ -1,7 +1,7 @@
+import {Array2D} from "../../Utility/Array2D.ts";
+import {Coordinate, Dimensions} from "../../Utility/Type/Dimensional.ts";
 import type {Particle} from "../Particle/Particle";
 import {ParticleType} from "../Particle/ParticleType.ts";
-import {Coordinate, Dimensions} from "../../Utility/Type/Dimensional.ts";
-import {Array2D} from "../../Utility/Array2D.ts";
 import {WorldCoordinate} from "./World.ts";
 
 // type Change = {

@@ -1,7 +1,7 @@
-import {Particle} from "../Particle/Particle.ts";
 import {Direction, Traversal} from "../../Utility/Type/Dimensional.ts";
 import {Chunk} from "../Grid/Chunk.ts";
 import {World, WorldCoordinate} from "../Grid/World.ts";
+import {Particle} from "../Particle/Particle.ts";
 
 type DirtyFlag = {
     dirty?: boolean,
