@@ -111,10 +111,7 @@ export class World {
             y: y * this.chunkSize
         });
 
-        const chunk = new Chunk(
-            bounds,
-            bounds.topLeft,
-        );
+        const chunk = new Chunk(bounds);
 
         this.chunks.set(this.toKey(coordinate), chunk);
 

@@ -16,11 +16,8 @@ export class Simulator {
         this.world.iterateChunks(this.updateManager.bind(this));
 
         for (const [, manager] of this.chunkManagers) {
-
             manager.updateActiveChunk();
         }
-
-        // this.world.iterateChunks(chunk => chunk.commitChanges());
     }
 
     private updateManager(chunk: Chunk): void {

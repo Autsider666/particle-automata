@@ -7,14 +7,14 @@ import {WorldCoordinate} from "./World.ts";
 const testBounds = BoundingBox.fromDimension(10, 5);
 
 test('Can get particle', () => {
-    const chunk = new Chunk(testBounds, testBounds.topLeft, () => ParticleType.Air);
+    const chunk = new Chunk(testBounds, () => ParticleType.Air);
     const coordinate = {x: 5, y: 1} as WorldCoordinate;
 
     expect(chunk.getParticle(coordinate).color).to.eq(ParticleType.Air.color);
 });
 
 test('Throws error on get with invalid coordinate', () => {
-    const chunk = new Chunk(testBounds, testBounds.topLeft);
+    const chunk = new Chunk(testBounds);
 
     expect(() => chunk.getParticle({x: -10, y: 1} as WorldCoordinate)).to.throw('Invalid coordinate');
     expect(() => chunk.getParticle({x: 10, y: 1} as WorldCoordinate)).to.throw('Invalid coordinate');
@@ -22,7 +22,7 @@ test('Throws error on get with invalid coordinate', () => {
 });
 
 test('Can set particle', () => {
-    const chunk = new Chunk(testBounds, testBounds.topLeft);
+    const chunk = new Chunk(testBounds);
     const coordinate = {x: 2, y: 1} as WorldCoordinate;
 
     expect(chunk.getParticle(coordinate)).to.not.eq(ParticleType.Air);
@@ -34,7 +34,7 @@ test('Can set particle', () => {
 });
 
 test('Throws error on set with invalid coordinate', () => {
-    const chunk = new Chunk(testBounds, testBounds.topLeft);
+    const chunk = new Chunk(testBounds);
     const coordinate = {x: -10, y: 10} as WorldCoordinate;
 
     expect(() => chunk.setParticle(coordinate, ParticleType.Sand)).to.throw('Invalid coordinate');

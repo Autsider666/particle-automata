@@ -5,6 +5,7 @@ import {World} from "./Engine/Grid/World.ts";
 import {ParticleType} from "./Engine/Particle/ParticleType.ts";
 import {Simulator} from "./Engine/Simulator.ts";
 import {BoundingBox} from "./Engine/Utility/Excalibur/BoundingBox.ts";
+import Stats from "./Utility/Stats/Stats.ts";
 
 const canvas = document.querySelector('canvas');
 if (!canvas) {
@@ -16,35 +17,54 @@ if (!ctx) {
     throw new Error('No 2D context available');
 }
 
-canvas.width = window.innerWidth - 20;
-canvas.height = window.innerHeight - 20;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-const squareWorldSize: number = 150;
+const particleSize: number = 4;
+const debug: boolean = true;
 
-const bounds = BoundingBox.fromDimension(squareWorldSize, squareWorldSize);
-const world = new World(bounds, 10); //TODO add outer bounds
+const initialWorldBounds = BoundingBox.fromDimension(480, 230);
+const world = new World(initialWorldBounds, 10); //TODO add outer bounds
 
 world.iterateParticles((_particle, coordinate) => {
     const {x, y} = coordinate;
-    if (x === 1) {
-        return;
-    }
+    // if (x === 1) {
+    //     return;
+    // }
 
-    if (x === bounds.left || x === bounds.right - 1 || y === bounds.top || y === bounds.bottom - 1) {
+    if (x === initialWorldBounds.left || x === initialWorldBounds.right - 1 || y === initialWorldBounds.top || y === initialWorldBounds.bottom - 1) {
         world.setParticle(coordinate, ParticleType.Stone);
     }
 }, true);
 
 const simulator = new Simulator(world, ObviousNonsenseBehaviourManager);
 
-const renderer = new CanvasRenderer(world, 5);
+const renderer = new CanvasRenderer(world, particleSize, undefined, undefined, debug);
 
 const fpsInterval = 1000 / 1000;
 let then: number = 0;
 let elapsed: number = 0;
 
-const centerX = Math.round(squareWorldSize / 2);
+const centerX = Math.round(initialWorldBounds.width / 2);
 const centerOffset: number = 10;
+
+const stats: Stats | undefined = debug ? new Stats({
+    width: 100,
+    height: 60,
+    // width: 80,
+    // height: 48,
+    showAll: true,
+    defaultPanels: {
+        MS: {
+            decimals: 1,
+            maxValue: 25,
+        },
+    }
+}) : undefined;
+
+if(debug && stats) {
+    document.body.appendChild(stats.dom);
+}
 
 const step = () => {
     const now = Date.now();
@@ -55,7 +75,10 @@ const step = () => {
 
         then = now - (elapsed % fpsInterval);
 
+        stats?.begin();
         simulator.update();
+        stats?.end();
+
         renderer.draw(ctx);
 
         world.iterateParticles((_particle, coordinate) => {

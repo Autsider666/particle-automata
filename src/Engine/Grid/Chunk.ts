@@ -1,7 +1,7 @@
 import {Array2D} from "../../Utility/Array2D.ts";
-import {Coordinate, Dimensions} from "../../Utility/Type/Dimensional.ts";
 import type {Particle} from "../Particle/Particle";
 import {ParticleType} from "../Particle/ParticleType.ts";
+import {BoundingBox} from "../Utility/Excalibur/BoundingBox.ts";
 import {WorldCoordinate} from "./World.ts";
 
 // type Change = {
@@ -17,11 +17,10 @@ export class Chunk {
     public dirty: boolean = true;
 
     constructor(
-        dimensions: Dimensions,
-        coordinateZero: Coordinate,
+        public readonly bounds: BoundingBox,
         private readonly newParticleBuilder: () => Particle = () => ParticleType.Air
     ) {
-        this.particles = new Array2D<Particle, WorldCoordinate>(dimensions, this.newParticleBuilder.bind(this), coordinateZero);
+        this.particles = new Array2D<Particle, WorldCoordinate>(bounds, this.newParticleBuilder.bind(this), bounds.topLeft);
     }
 
     public iterateParticles<P extends Particle = Particle>(callback: (particle: P, coordinate: WorldCoordinate) => void): void {
