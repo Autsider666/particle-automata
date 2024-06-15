@@ -98,10 +98,6 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
                 callback(this.get<P>(coordinate), coordinate);
             }
         }
-
-        // for (const item of this.iterateSet) {
-        //     callback(item);
-        // }
     }
 
     iterateChanges(callback: (item: I) => void): void {

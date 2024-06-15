@@ -5,6 +5,7 @@ import {World} from "./Engine/Grid/World.ts";
 import {ParticleType} from "./Engine/Particle/ParticleType.ts";
 import {Simulator} from "./Engine/Simulator.ts";
 import {BoundingBox} from "./Engine/Utility/Excalibur/BoundingBox.ts";
+import {FrameRateManager} from "./Utility/FrameRateManager.ts";
 import Stats from "./Utility/Stats/Stats.ts";
 
 const canvas = document.querySelector('canvas');
@@ -20,35 +21,69 @@ if (!ctx) {
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const particleSize: number = 4;
-const debug: boolean = true;
+type Config = {
+    world: {
+        width: number,
+        height: number,
+    },
+    chunks: {
+        size: number,
+    }
+    simulation: {
+        fps: number,
+        particleSize: number,
+    },
+    debug?: {
+        draw?: boolean,
+        stats?: boolean,
+        fillerOffset?: number,
+        fillerLimit?: number,
+    },
+};
 
-const initialWorldBounds = BoundingBox.fromDimension(480, 230);
-const world = new World(initialWorldBounds, 10); //TODO add outer bounds
+const config: Config = {
+    world: {
+        width: 200,
+        height: 200,
+    },
+    chunks: {
+        size: 25,
+    },
+    simulation: {
+        fps: 100,
+        particleSize: 4,
+    },
+    debug: {
+        draw: false,
+        stats: true,
+        fillerOffset: 10,
+        fillerLimit: -1,
+    }
+};
 
-world.iterateParticles((_particle, coordinate) => {
+const initialWorldBounds = BoundingBox.fromDimension(config.world.width, config.world.height);
+const world = new World(initialWorldBounds, config.chunks.size); //TODO add outer bounds
+
+world.iterateAllParticles((_particle, coordinate) => {
     const {x, y} = coordinate;
-    // if (x === 1) {
-    //     return;
-    // }
-
-    if (x === initialWorldBounds.left || x === initialWorldBounds.right - 1 || y === initialWorldBounds.top || y === initialWorldBounds.bottom - 1) {
+    if (x === initialWorldBounds.left
+        || x === initialWorldBounds.right - 1
+        // || y === initialWorldBounds.top
+        || y === initialWorldBounds.bottom - 1
+    ) {
         world.setParticle(coordinate, ParticleType.Stone);
     }
-}, true);
+});
 
 const simulator = new Simulator(world, ObviousNonsenseBehaviourManager);
 
-const renderer = new CanvasRenderer(world, particleSize, undefined, undefined, debug);
-
-const fpsInterval = 1000 / 1000;
-let then: number = 0;
-let elapsed: number = 0;
+const renderer = new CanvasRenderer(world, config.simulation.particleSize, undefined, undefined, config.debug?.draw);
 
 const centerX = Math.round(initialWorldBounds.width / 2);
-const centerOffset: number = 10;
+const centerOffset: number = config.debug?.fillerOffset ?? 0;
+let fillerLimit: number = config.debug?.fillerLimit ?? -1;
 
-const stats: Stats | undefined = debug ? new Stats({
+const stats: Stats | undefined = config.debug && config?.debug?.stats ? new Stats({
     width: 100,
     height: 60,
     // width: 80,
@@ -62,35 +97,28 @@ const stats: Stats | undefined = debug ? new Stats({
     }
 }) : undefined;
 
-if(debug && stats) {
+if (config.debug && config?.debug?.stats && stats) {
     document.body.appendChild(stats.dom);
 }
 
-const step = () => {
-    const now = Date.now();
-    elapsed = now - then;
+new FrameRateManager(() => {
+    simulator.update();
 
-    const nextStep = elapsed > fpsInterval;
-    if (nextStep) {
-
-        then = now - (elapsed % fpsInterval);
-
-        stats?.begin();
-        simulator.update();
-        stats?.end();
-
-        renderer.draw(ctx);
-
-        world.iterateParticles((_particle, coordinate) => {
-            const {x, y} = coordinate;
-            if (x > centerX - centerOffset && x < centerX + centerOffset && y === 1) {
-                world.setParticle(coordinate, ParticleType.Sand);
+    if (fillerLimit !== 0) {
+        world.iterateAllParticles((_particle, coordinate) => {
+            if (fillerLimit === 0) {
+                return;
             }
-        }, true);
+
+            const {x, y} = coordinate;
+            if (x > centerX - centerOffset && x < centerX + centerOffset && y === 0) {
+                world.setParticle(coordinate, ParticleType.Sand);
+                fillerLimit--;
+            }
+        });
     }
 
-    requestAnimationFrame(step);
-};
-
-step();
-
+    stats?.begin();
+    renderer.draw(ctx);
+    stats?.end();
+}, config.simulation.fps);

@@ -99,11 +99,18 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
     }
 
     private updateOther(particle: ObviousParticle, coordinate: WorldCoordinate): void {
+        let i = 0;
         for (const updateDirection of this.updateList) {
             if (this.tryGridPosition(particle, coordinate, updateDirection)) {
                 particle.dirty = true;
                 break;
             }
+
+            if (i === 2) {
+                break;
+            }
+
+            i++;
         }
 
         this.shuffleUpdateList(false);

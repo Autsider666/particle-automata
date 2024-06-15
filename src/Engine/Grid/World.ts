@@ -60,22 +60,23 @@ export class World {
         return this.getChunk(coordinate).containsCoordinate(coordinate);
     }
 
-    public iterateChunks(callback: (chunk: Chunk) => void): void {
-        for (const [, chunk] of this.chunks) {
-            callback(chunk);
+    public iterateChunks(callback: (chunk: Chunk, coordinate: ChunkCoordinate) => void): void {
+        for (const [key, chunk] of this.chunks) {
+            callback(chunk, this.toCoordinate(key));
         }
     }
 
-    public iterateParticles(callback: (particle: Particle, coordinate: WorldCoordinate) => void, ignoreDirty: boolean = false): void {
+    public iterateAllParticles(callback: (particle: Particle, coordinate: WorldCoordinate) => void): void {
         this.iterateChunks((chunk: Chunk) => {
-            if (!chunk.dirty && !ignoreDirty) {
-                return;
-            }
-
             chunk.iterateParticles((particle, coordinate) => {
                 callback(particle, coordinate);
             });
         });
+    }
+
+    private toCoordinate(key: string): ChunkCoordinate {
+        const [x, y] = key.split('-').map(string => parseInt(string));
+        return {x, y} as ChunkCoordinate;
     }
 
     private toKey({x, y}: ChunkCoordinate): string {
@@ -120,5 +121,34 @@ export class World {
 
     isValidCoordinate(coordinate: WorldCoordinate): boolean {
         return this.getChunkIfExists(coordinate)?.isValidCoordinate(coordinate) ?? false;
+    }
+
+    wakeChunk(coordinate: WorldCoordinate) {
+        const {x, y} = coordinate;
+        if (x % this.chunkSize === 0) {
+            this.getChunk(
+                Traversal.getDestinationCoordinate(coordinate, {dX: -1, dY: 0})
+            ).wakeUp();
+        }
+
+        if (x % this.chunkSize === this.chunkSize - 1) {
+            this.getChunk(
+                Traversal.getDestinationCoordinate(coordinate, {dX: +1, dY: 0})
+            ).wakeUp();
+        }
+
+        if (y % this.chunkSize === 0) {
+            this.getChunk(
+                Traversal.getDestinationCoordinate(coordinate, {dX: 0, dY: -1})
+            ).wakeUp();
+        }
+
+        if (y % this.chunkSize === this.chunkSize - 1) {
+            this.getChunk(
+                Traversal.getDestinationCoordinate(coordinate, {dX: 0, dY: +1})
+            ).wakeUp();
+        }
+
+        this.getChunk(coordinate).wakeUp(); //TODO move this to Manager for 1 less search?
     }
 }

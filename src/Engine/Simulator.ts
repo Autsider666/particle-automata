@@ -13,16 +13,20 @@ export class Simulator {
     }
 
     public update(): void {
-        this.world.iterateChunks(this.updateManager.bind(this));
+        this.world.iterateChunks(this.prepareForUpdate.bind(this));
+
+        const duplicateCheck = new Set<number>();
 
         for (const [, manager] of this.chunkManagers) {
-            manager.updateActiveChunk();
+            manager.updateActiveChunk(duplicateCheck);
         }
     }
 
-    private updateManager(chunk: Chunk): void {
+    private prepareForUpdate(chunk: Chunk): void {
         if (!this.chunkManagers.has(chunk)) {
             this.chunkManagers.set(chunk, new this.builder(this.world, chunk));
         }
+
+        chunk.prepareForUpdate();
     }
 }

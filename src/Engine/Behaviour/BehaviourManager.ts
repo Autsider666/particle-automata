@@ -20,17 +20,21 @@ export abstract class BehaviourManager {
     ) {
     }
 
-    updateActiveChunk(): void {
-        if (!this.chunk.dirty) {
+    updateActiveChunk(duplicateCheck:Set<number>): void {
+        if (!this.chunk.isActive()) {
             return;
         }
 
-        const duplicateCheck = new Set<number>();
-        this.chunk.dirty = false;
-
         this.chunk.iterateParticles<DirtyParticle>((particle, coordinate) => {
-            if (!particle.id) {
+            if (particle.ephemeral || particle.immovable) {
+                return;
+            }
+
+            if (particle.id === undefined) {
                 particle.id = particleId++;
+                // console.log({
+                //     particleId: particle.id, state: 'new', x: coordinate.x, y: coordinate.y, chunkId: this.chunk.id
+                // });
             } else if (duplicateCheck.has(particle.id)) {
                 return;
             }
@@ -41,7 +45,22 @@ export abstract class BehaviourManager {
             this.updateParticle(particle, coordinate);
 
             if (particle.dirty) {
-                this.chunk.dirty = true;
+                // console.log({
+                //     particleId: particle.id,
+                //     state: 'update',
+                //     x: coordinate.x,
+                //     y: coordinate.y,
+                //     chunkId: this.chunk.id
+                // });
+                this.wakeChunk(coordinate);
+            } else if (particle.id + 1 !== particleId) {
+                // console.log({
+                //     particleId: particle.id,
+                //     state: 'stale',
+                //     x: coordinate.x,
+                //     y: coordinate.y,
+                //     chunkId: this.chunk.id
+                // });
             }
         });
     }
@@ -71,6 +90,10 @@ export abstract class BehaviourManager {
         } else {
             this.world.moveParticle(coordinate, direction);
         }
+    }
+
+    wakeChunk(coordinate:WorldCoordinate):void {
+        this.world.wakeChunk(coordinate);
     }
 
     isValidCoordinate(coordinate: WorldCoordinate): boolean {

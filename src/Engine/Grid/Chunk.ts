@@ -10,11 +10,16 @@ import {WorldCoordinate} from "./World.ts";
 //     target: WorldCoordinate,
 // }
 
+let chunkId: number = 0;
+
 export class Chunk {
+    public readonly id: number = chunkId++;
+
     private readonly particles: Array2D<Particle, WorldCoordinate>; //TODO check if Set is faster
     // private readonly changes = new Set<Change>();
 
-    public dirty: boolean = true;
+    private shouldUpdate: boolean = false;
+    private shouldUpdateNextTime: boolean = false;
 
     constructor(
         public readonly bounds: BoundingBox,
@@ -38,7 +43,8 @@ export class Chunk {
     public setParticle(coordinate: WorldCoordinate, particle: Particle): void {
         this.particles.set(coordinate, particle);
 
-        this.dirty = true;
+        this.wakeUp();
+
         // if (this.getParticle(coordinate)?.ephemeral === true) {
         //     this.particles.set(coordinate, particle);
         //     this.dirty = true;
@@ -55,39 +61,23 @@ export class Chunk {
 
         this.setParticle(targetCoordinate, sourceParticle);
         source.setParticle(currentCoordinate, targetParticle);
-
-        // this.changes.add({
-        //     source,
-        //     origin: {x: currentCoordinate.x, y: currentCoordinate.y} as WorldCoordinate,
-        //     target: {x: targetCoordinate.x, y: targetCoordinate.y} as WorldCoordinate,
-        // });
     }
 
-    // commitChanges() {
-    //     for (const change of this.changes) {
-    //         if (this.getParticle(change.target).ephemeral === true) {
-    //             this.changes.delete(change);
-    //         }
-    //     }
-    //
-    //     this.changes.add({
-    //             source: this,
-    //             origin: {x: 0, y: 0} as WorldCoordinate,
-    //             target: {x: 0, y: 0} as WorldCoordinate
-    //         }
-    //     );
-    //     const changes = Array.from(this.changes);
-    //     for (let i = 0; i < changes.length; i++) {
-    //         const current = changes[i].target;
-    //         const next = changes[i+1].target;
-    //         if (current.x !== next.x && current.y !== current.y) {
-    //
-    //         }
-    //     }
-    //
-    //     this.changes.clear();
-    // }
-    isValidCoordinate(coordinate: WorldCoordinate) {
+    public isValidCoordinate(coordinate: WorldCoordinate) {
         return this.particles.containsCoordinate(coordinate);
+    }
+
+    public prepareForUpdate(): void {
+        this.shouldUpdate = this.shouldUpdateNextTime;
+        this.shouldUpdateNextTime = false;
+    }
+
+    public isActive(): boolean {
+        return this.shouldUpdate;
+    }
+
+    public wakeUp(): void {
+        this.shouldUpdate = true;
+        this.shouldUpdateNextTime = true;
     }
 }

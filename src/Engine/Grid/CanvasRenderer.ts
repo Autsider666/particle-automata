@@ -1,13 +1,14 @@
 import {World} from "./World.ts";
 
 export class CanvasRenderer {
-    private firstDraw:boolean = true;
+    private firstDraw: boolean = true;
+
     constructor(
         private readonly world: World,
         private readonly particleSize: number,
         private readonly height: number = window.innerHeight,
         private readonly width: number = window.innerWidth,
-        private readonly debug:boolean = false,
+        private readonly debug: boolean = false,
     ) {
     }
 
@@ -26,31 +27,31 @@ export class CanvasRenderer {
         //     ctx.fillRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
         // }, true);
 
-        this.world.iterateChunks(chunk => {
-            if (!chunk.dirty && !this.firstDraw) {
-            // if (!chunk.dirty) {
+        this.world.iterateChunks((chunk) => {
+            if (!chunk.isActive() && !this.firstDraw && !this.debug) {
                 return;
             }
 
-            if(this.debug){
-                ctx.strokeStyle = 'gray';
+            chunk.iterateParticles((particle, {x, y}) => { //TODO only changed particles
+                if (!particle.ephemeral) {
+                    ctx.fillStyle = particle.color;
+                    ctx.fillRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
+                } else {
+                    ctx.clearRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
+                }
+            });
+
+            if (this.debug && !this.firstDraw && chunk.isActive()) { //TODO split debug drawing of to DebugCanvasRenderer and a overlapping debug canvas?
+                ctx.strokeStyle = 'rgb(50,114,99)';
+                ctx.lineWidth = 1;
+                const halfStroke = ctx.lineWidth * 0.5;
                 ctx.strokeRect(
-                    chunk.bounds.left * this.particleSize,
-                    chunk.bounds.top * this.particleSize,
-                    chunk.bounds.width * this.particleSize,
-                    chunk.bounds.height * this.particleSize,
+                    chunk.bounds.left * this.particleSize + halfStroke,
+                    chunk.bounds.top * this.particleSize + halfStroke,
+                    chunk.bounds.width * this.particleSize - halfStroke * 2,
+                    chunk.bounds.height * this.particleSize - halfStroke * 2,
                 );
             }
-
-            chunk.iterateParticles((particle, {x, y}) => {
-                if (particle.ephemeral) {
-                    ctx.clearRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
-                    return;
-                }
-
-                ctx.fillStyle = particle.color;
-                ctx.fillRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
-            });
         });
 
         if (this.firstDraw) {
