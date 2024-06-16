@@ -1,4 +1,4 @@
-import {ColorTuple} from "./Color.ts";
+import {RGBATuple} from "./Color.ts";
 import {BoundingBox} from "./Excalibur/BoundingBox.ts";
 import {Coordinate, WorldDimensions} from "./Type/Dimensional.ts";
 
@@ -34,7 +34,7 @@ export class ImageDataHelper<C extends Coordinate = Coordinate> {
         ctx.putImageData(this.imageData, 0, 0);
     }
 
-    public fillRectangle(coordinate: C, width: number, height: number, color: ColorTuple): void { //TODO Cache rectangles?
+    public fillRectangle(coordinate: C, width: number, height: number, color: RGBATuple): void { //TODO Cache rectangles?
         if (!this.gridBounds.containsCoordinate(coordinate)) {
             return;
         }
@@ -59,11 +59,16 @@ export class ImageDataHelper<C extends Coordinate = Coordinate> {
     //     return {x: x, y: y};
     // }
 
-    private fillPixel(coordinate: Coordinate, color: ColorTuple): void {
+    private fillPixel(coordinate: Coordinate, color: RGBATuple): void {
         const idx = this.getIndexForPixelLocation(coordinate);
         this.imageData.data[idx] = color[0]; // Red
         this.imageData.data[idx + 1] = color[1]; // Green
         this.imageData.data[idx + 2] = color[2]; // Blue
-        this.imageData.data[idx + 3] = color[3]; // Alpha
+
+        let alpha = color[3];
+        if (alpha <= 1){
+           alpha*=255;
+        }
+        this.imageData.data[idx + 3] = alpha; // Alpha
     }
 }

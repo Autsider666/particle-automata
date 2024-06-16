@@ -1,4 +1,4 @@
-import {ColorTuple} from "../../Utility/Color.ts";
+import {RGBATuple} from "../../Utility/Color.ts";
 import {ImageDataHelper} from "../../Utility/ImageDataHelper.ts";
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
 import {WorldCoordinate} from "../Grid/World.ts";
@@ -62,7 +62,7 @@ export class ImageDataRenderer extends Renderer {
         );
     }
 
-    private fillGridElement(coordinate: WorldCoordinate, color: ColorTuple) {
+    private fillGridElement(coordinate: WorldCoordinate, color: RGBATuple) {
         this.imageData.fillRectangle(
             coordinate,
             this.particleSize,

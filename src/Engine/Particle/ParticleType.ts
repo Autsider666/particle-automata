@@ -1,4 +1,4 @@
-import {Color, ColorTuple, ColorVariance} from "../../Utility/Color.ts";
+import {Color, RGBATuple, ColorVariance} from "../../Utility/Color.ts";
 
 const genericColorVariance: ColorVariance = {
     hue: {value: 0},
@@ -10,7 +10,7 @@ const genericColorVariance: ColorVariance = {
 export interface ParticleTypeData {
     color: HexColor,
     colorVariance?: ColorVariance | false,
-    colorTuple?: ColorTuple,
+    colorTuple?: RGBATuple,
     canDraw?: boolean,
     drawProbability?: number,
     density?: number,
@@ -83,11 +83,13 @@ for (const key of Object.keys(particleTypes) as ParticleType[]) {
         get: (): ParticleTypeData => {
             const newBase:ParticleTypeData = {...particleTypes[key]};
 
-            newBase.colorTuple = Color.varyColorTuple(newBase.color);
 
             const colorVariance = newBase.colorVariance;
             if (colorVariance) {
+                newBase.colorTuple = Color.varyColorTuple(newBase.color, colorVariance);
                 newBase.color = Color.varyColor(newBase.color, colorVariance) as typeof newBase.color;
+            } else {
+                newBase.colorTuple = Color.varyColorTuple(newBase.color);
             }
 
             return newBase;
