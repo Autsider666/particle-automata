@@ -7,11 +7,10 @@ export class ImageDataHelper {
     private readonly imageData: ImageData;
 
     constructor(
-        private readonly gridWidth: number,
-        private readonly gridHeight: number,
-        private readonly elementSize: number,
+        private readonly width: number,
+        private readonly height: number,
     ) {
-        this.imageData = new ImageData(this.gridWidth * this.elementSize, this.gridHeight * elementSize);
+        this.imageData = new ImageData(this.width, this.height);
         for (let i = 0; i < this.imageData.data.length; i += BytesPerPixel) {
             this.imageData.data[i + 3] = 255;
         }

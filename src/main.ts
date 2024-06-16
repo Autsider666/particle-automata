@@ -76,7 +76,7 @@ const config: Config = {
     debug: {
         draw: false,
         stats: true,
-        fillerOffset: 10,
+        fillerOffset: 5,
         fillerLimit: -1,
     }
 };
@@ -142,7 +142,8 @@ if (workerMode) {
         }));
     }
 
-    const stats: Stats | undefined = debugMode ? new Stats({
+    const statsMode: boolean = URLParams.get('stats', "boolean") ?? false;
+    const stats: Stats | undefined = statsMode ? new Stats({
         width: 100,
         height: 60,
         // width: 80,
@@ -156,7 +157,7 @@ if (workerMode) {
         }
     }) : undefined;
 
-    if (debugMode && stats) {
+    if (statsMode && stats) {
         document.body.appendChild(stats.dom);
     }
 

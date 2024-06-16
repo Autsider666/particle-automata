@@ -142,6 +142,9 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
             ) {
                 this.moveParticle(coordinate, direction);
 
+                particle.dirty = true;
+                particleInDirection.dirty = true;
+
                 return true;
             }
         } else if (trySwap && !particleInDirection.hasBeenDisplaced) {
@@ -156,6 +159,9 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
                     rises ? this.risingDisplacementDirections : this.fallingDisplacementDirections,
                 )) {
                     this.moveParticle(coordinate, direction);
+
+                    particle.dirty = true;
+                    particleInDirection.dirty = true;
                 }
 
                 return true;

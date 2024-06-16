@@ -10,6 +10,7 @@ export type WorldCoordinate = Distinct<Coordinate, 'World'>;
 
 export class World {
     private readonly chunks: Map<string, Chunk> = new Map<string, Chunk>();
+    private readonly activeChunks = new Set<{ chunk: Chunk, coordinate: ChunkCoordinate }>();
 
     constructor(
         initialWorldBounds: BoundingBox,
@@ -48,12 +49,15 @@ export class World {
         this.getChunk(coordinate).setParticle(coordinate, particle);
     }
 
-    moveParticle(coordinate: WorldCoordinate, direction: Direction): void {
+    moveParticle<P extends Particle = Particle>(
+        coordinate: WorldCoordinate,
+        direction: Direction,
+    ): P {
         const currentChunk = this.getChunk(coordinate);
         const destination = Traversal.getDestinationCoordinate<WorldCoordinate>(coordinate, direction);
         const destinationChunk = this.getChunk(destination);
 
-        destinationChunk.moveParticle(currentChunk, coordinate, destination);
+        return destinationChunk.moveParticle<P>(currentChunk, coordinate, destination);
     }
 
     containsCoordinate(coordinate: WorldCoordinate): boolean {
@@ -66,9 +70,15 @@ export class World {
         }
     }
 
+    public iterateActiveChunks(callback: (chunk: Chunk, coordinate: ChunkCoordinate) => void): void {
+        for (const {chunk, coordinate} of this.activeChunks) {
+            callback(chunk, coordinate);
+        }
+    }
+
     public iterateAllParticles(callback: (particle: Particle, coordinate: WorldCoordinate) => void): void {
         this.iterateAllChunks((chunk: Chunk) => {
-            chunk.iterateParticles((particle, coordinate) => {
+            chunk.iterateAllParticles((particle, coordinate) => {
                 callback(particle, coordinate);
             });
         });
@@ -150,5 +160,17 @@ export class World {
         }
 
         this.getChunk(coordinate).wakeUp(); //TODO move this to Manager for 1 less search?
+    }
+
+    prepareForUpdate() {
+        this.activeChunks.clear();
+        for (const [key, chunk] of this.chunks) {
+            if (chunk.isActive()) {
+                this.activeChunks.add({
+                    chunk,
+                    coordinate: this.toCoordinate(key),
+                });
+            }
+        }
     }
 }

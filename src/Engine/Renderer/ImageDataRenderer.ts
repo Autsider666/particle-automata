@@ -10,30 +10,25 @@ export class ImageDataRenderer implements Renderer {
     private firstDraw: boolean = true;
 
     constructor(
-        private readonly ctx: CanvasImageData,
+        private readonly ctx: CanvasImageData & CanvasRect,
         private readonly world: World,
         private readonly particleSize: number,
-        height: number,
-        width: number,
+        private readonly height: number,
+        private readonly width: number,
     ) {
         this.imageData = new ImageDataHelper(
             width,
             height,
-            particleSize,
         );
     }
 
     draw(): void {
-        // if (this.firstDraw) {
-        //     this.ctx.clearRect(0, 0, this.width, this.height);
-        // }
+        if (this.firstDraw) {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+        }
 
-        this.world.iterateAllChunks((chunk) => {
-            if (!chunk.isActive() && !this.firstDraw) {
-                return;
-            }
-
-            chunk.iterateParticles((particle, coordinate): void => { //TODO only changed particles
+        this.world.iterateActiveChunks((chunk) => {
+            chunk.iterateDirtyParticles((particle, coordinate): void => { //TODO only changed particles
                 if (particle.ephemeral) {
                     this.clearGridElement(coordinate);
                 } else if (particle.colorTuple) {

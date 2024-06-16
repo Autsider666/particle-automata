@@ -18,13 +18,8 @@ export class CanvasRenderer implements Renderer {
         if (this.firstDraw) {
             this.ctx.clearRect(0, 0, this.width, this.height);
         }
-
-        this.world.iterateAllChunks((chunk) => {
-            if (!chunk.isActive() && !this.firstDraw) {
-                return;
-            }
-
-            chunk.iterateParticles((particle, {x, y}) => { //TODO only changed particles
+        this.world.iterateActiveChunks((chunk) => {
+            chunk.iterateDirtyParticles((particle, {x, y}) => { //TODO only changed particles
                 if (!particle.ephemeral) {
                     this.ctx.fillStyle = particle.color;
                     this.ctx.fillRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);

@@ -8,7 +8,7 @@ type DirtyFlag = {
     id?: number; //FIXME remove
 };
 
-type DirtyParticle = Particle<DirtyFlag>
+export type DirtyParticle = Particle<DirtyFlag>
 
 
 let particleId: number = 0;
@@ -25,7 +25,7 @@ export abstract class BehaviourManager {
             return;
         }
 
-        this.chunk.iterateParticles<DirtyParticle>((particle, coordinate) => {
+        this.chunk.iterateAllParticles<DirtyParticle>((particle, coordinate) => {
             if (particle.ephemeral || particle.immovable) {
                 return;
             }
@@ -86,9 +86,9 @@ export abstract class BehaviourManager {
     moveParticle(coordinate: WorldCoordinate, direction: Direction): void {
         const destination = Traversal.getDestinationCoordinate(coordinate, direction);
         if (this.chunk.containsCoordinate(coordinate) && this.chunk.containsCoordinate(destination)) {
-            this.chunk.moveParticle(this.chunk, coordinate, destination);
+            this.chunk.moveParticle<DirtyParticle>(this.chunk, coordinate, destination).dirty = true;
         } else {
-            this.world.moveParticle(coordinate, direction);
+            this.world.moveParticle<DirtyParticle>(coordinate, direction).dirty = true;
         }
     }
 

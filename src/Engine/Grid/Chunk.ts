@@ -1,7 +1,8 @@
 import {Array2D} from "../../Utility/Array2D.ts";
+import {BoundingBox} from "../../Utility/Excalibur/BoundingBox.ts";
+import {DirtyParticle} from "../Behaviour/BehaviourManager.ts";
 import type {Particle} from "../Particle/Particle";
 import {ParticleType} from "../Particle/ParticleType.ts";
-import {BoundingBox} from "../../Utility/Excalibur/BoundingBox.ts";
 import {WorldCoordinate} from "./World.ts";
 
 // type Change = {
@@ -16,9 +17,9 @@ export class Chunk {
     public readonly id: number = chunkId++;
 
     private readonly particles: Array2D<Particle, WorldCoordinate>; //TODO check if Set is faster
-    // private readonly changes = new Set<Change>();
+    private readonly activeParticles = new Set<{ particle: Particle, coordinate: WorldCoordinate }>();
 
-    private shouldUpdate: boolean = false;
+    private shouldUpdate: boolean = true;
     private shouldUpdateNextTime: boolean = false;
 
     constructor(
@@ -28,7 +29,13 @@ export class Chunk {
         this.particles = new Array2D<Particle, WorldCoordinate>(bounds, this.newParticleBuilder.bind(this), bounds.topLeft);
     }
 
-    public iterateParticles<P extends Particle = Particle>(callback: (particle: P, coordinate: WorldCoordinate) => void): void {
+    public iterateDirtyParticles<P extends Particle = Particle>(callback: (particle: P, coordinate: WorldCoordinate) => void): void {
+        for (const {particle, coordinate} of this.activeParticles) {
+            callback(particle as P, coordinate);
+        }
+    }
+
+    public iterateAllParticles<P extends Particle = Particle>(callback: (particle: P, coordinate: WorldCoordinate) => void): void {
         this.particles.iterateItems(callback);
     }
 
@@ -36,8 +43,8 @@ export class Chunk {
         return this.particles.containsCoordinate(coordinate);
     }
 
-    public getParticle(coordinate: WorldCoordinate): Particle {
-        return this.particles.get(coordinate);
+    public getParticle<P extends Particle = Particle>(coordinate: WorldCoordinate): P {
+        return this.particles.get<P>(coordinate);
     }
 
     public setParticle(coordinate: WorldCoordinate, particle: Particle): void {
@@ -55,12 +62,18 @@ export class Chunk {
         // return false;
     }
 
-    public moveParticle(source: Chunk, currentCoordinate: WorldCoordinate, targetCoordinate: WorldCoordinate): void {
-        const sourceParticle = source.getParticle(currentCoordinate);
-        const targetParticle = this.getParticle(targetCoordinate);
+    public moveParticle<P extends Particle = Particle>(
+        source: Chunk,
+        currentCoordinate: WorldCoordinate,
+        targetCoordinate: WorldCoordinate,
+    ): P {
+        const currentParticle = source.getParticle<P>(currentCoordinate);
+        const targetParticle = this.getParticle<P>(targetCoordinate);
 
-        this.setParticle(targetCoordinate, sourceParticle);
+        this.setParticle(targetCoordinate, currentParticle);
         source.setParticle(currentCoordinate, targetParticle);
+
+        return targetParticle;
     }
 
     public isValidCoordinate(coordinate: WorldCoordinate) {
@@ -70,6 +83,13 @@ export class Chunk {
     public prepareForUpdate(): void {
         this.shouldUpdate = this.shouldUpdateNextTime;
         this.shouldUpdateNextTime = false;
+
+        this.activeParticles.clear();
+        this.iterateAllParticles<DirtyParticle>((particle, coordinate) => {
+            if (particle.dirty !== false) {
+                this.activeParticles.add({particle, coordinate});
+            }
+        });
     }
 
     public isActive(): boolean {
