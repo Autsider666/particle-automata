@@ -9,6 +9,7 @@ export type Config = {
     simulation: {
         fps: number,
         particleSize: number,
+        imageDataMode?: boolean,
     },
     worker?:{
       canvasIdentifier: string,

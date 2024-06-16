@@ -1,10 +1,11 @@
 import {World} from "../Grid/World.ts";
 
 
-export class OffscreenCanvasRenderer {
+export class CanvasRenderer {
     protected firstDraw: boolean = true;
 
     constructor(
+        protected readonly ctx: CanvasRect&CanvasFillStrokeStyles,
         protected readonly world: World,
         protected readonly particleSize: number,
         protected readonly height: number = window.innerHeight,
@@ -12,9 +13,9 @@ export class OffscreenCanvasRenderer {
     ) {
     }
 
-    draw(ctx: OffscreenCanvasRenderingContext2D): void {
+    draw(): void {
         if (this.firstDraw) {
-            ctx.clearRect(0, 0, this.width, this.height);
+            this.ctx.clearRect(0, 0, this.width, this.height);
         }
 
         this.world.iterateChunks((chunk) => {
@@ -24,10 +25,10 @@ export class OffscreenCanvasRenderer {
 
             chunk.iterateParticles((particle, {x, y}) => { //TODO only changed particles
                 if (!particle.ephemeral) {
-                    ctx.fillStyle = particle.color;
-                    ctx.fillRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
+                    this.ctx.fillStyle = particle.color;
+                    this.ctx.fillRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
                 } else {
-                    ctx.clearRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
+                    this.ctx.clearRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
                 }
             });
         });

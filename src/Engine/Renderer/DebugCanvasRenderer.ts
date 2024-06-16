@@ -1,21 +1,18 @@
 import {World} from "../Grid/World.ts";
 
-export class CanvasRenderer {
+export class DebugCanvasRenderer {
     private firstDraw: boolean = true;
 
     constructor(
         private readonly world: World,
         private readonly particleSize: number,
-        private readonly height: number = window.innerHeight,
-        private readonly width: number = window.innerWidth,
-        private readonly debug: boolean = false,
     ) {
     }
 
-    draw(ctx: CanvasRenderingContext2D): void {
-        if (this.firstDraw && !this.debug) {
-            ctx.clearRect(0, 0, this.width, this.height);
-        }
+    draw(ctx: CanvasRect&CanvasFillStrokeStyles&CanvasPathDrawingStyles): void {
+        // if (this.firstDraw && !this.debug) {
+        //     ctx.clearRect(0, 0, this.width, this.height);
+        // }
 
         // this.world.iterateParticles((particle, {x, y}) => {
         //     if (particle.ephemeral) {
@@ -28,9 +25,9 @@ export class CanvasRenderer {
         // }, true);
 
         this.world.iterateChunks((chunk) => {
-            if (!chunk.isActive() && !this.firstDraw && !this.debug) {
-                return;
-            }
+            // if (!chunk.isActive() && !this.firstDraw && !this.debug) {
+            //     return;
+            // }
 
             chunk.iterateParticles((particle, {x, y}) => { //TODO only changed particles
                 if (!particle.ephemeral) {
@@ -41,7 +38,7 @@ export class CanvasRenderer {
                 }
             });
 
-            if (this.debug && !this.firstDraw && chunk.isActive()) { //TODO split debug drawing of to DebugCanvasRenderer and a overlapping debug canvas?
+            if (!this.firstDraw && chunk.isActive()) { //TODO split debug drawing of to DebugCanvasRenderer and a overlapping debug canvas?
                 ctx.strokeStyle = 'rgb(50,114,99)';
                 ctx.lineWidth = 1;
                 const halfStroke = ctx.lineWidth * 0.5;

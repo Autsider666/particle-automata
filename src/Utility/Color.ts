@@ -41,12 +41,12 @@ export class Color {
             throw new Error('Invalid color hex: ' + color);
         }
 
-        let r = parseInt(result[1], 16);
-        let g = parseInt(result[2], 16);
-        let b = parseInt(result[3], 16);
-        r /= 255;
-        g /= 255;
-        b /= 255;
+        const r = parseInt(result[1], 16);
+        const g = parseInt(result[2], 16);
+        const b = parseInt(result[3], 16);
+        // r /= 255;
+        // g /= 255;
+        // b /= 255;
         return [r, g, b];
     }
 
