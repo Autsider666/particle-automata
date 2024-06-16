@@ -1,4 +1,4 @@
-import {Color, RGBATuple, ColorVariance} from "../../Utility/Color.ts";
+import {Color, ColorVariance, RGBATuple} from "../../Utility/Color.ts";
 
 const genericColorVariance: ColorVariance = {
     hue: {value: 0},
@@ -81,7 +81,7 @@ const particleTypesButClones = {} as Record<ParticleType, ParticleTypeData>;
 for (const key of Object.keys(particleTypes) as ParticleType[]) {
     Object.defineProperty(particleTypesButClones, key, {
         get: (): ParticleTypeData => {
-            const newBase:ParticleTypeData = {...particleTypes[key]};
+            const newBase: ParticleTypeData = {...particleTypes[key]};
 
 
             const colorVariance = newBase.colorVariance;

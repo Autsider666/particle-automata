@@ -13,7 +13,10 @@ export class BoundingBox<C extends Coordinate = Coordinate> {
     ) {
     }
 
-    public static fromDimension<C extends Coordinate = Coordinate>(width: number, height: number, pos: C = {x: 0, y: 0} as C) {
+    public static fromDimension<C extends Coordinate = Coordinate>(width: number, height: number, pos: C = {
+        x: 0,
+        y: 0
+    } as C) {
         const anchor: Coordinate = {x: 0, y: 0};
 
         return new BoundingBox<C>(

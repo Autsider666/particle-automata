@@ -14,7 +14,7 @@ export class SimpleWorldBuilder implements WorldBuilder {
 
         const world = new World(config.chunks.size, outerBounds);
 
-        if (!bounds || !outerBounds){
+        if (!bounds || !outerBounds) {
             return world;
         }
 

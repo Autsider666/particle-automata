@@ -10,11 +10,11 @@ import {Renderer, RendererProps} from "./Renderer.ts";
 export class RendererBuilder {
     static build(
         mode: RenderMode,
-        {config,world,ctx, dimensions}: {
-            config:Config,
-            world:World,
-            ctx:CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D,
-            dimensions:WorldDimensions,
+        {config, world, ctx, dimensions}: {
+            config: Config,
+            world: World,
+            ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+            dimensions: WorldDimensions,
         }
     ): Renderer {
         const props: RendererProps = {

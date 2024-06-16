@@ -27,7 +27,7 @@ export class ImageDataHelper<C extends Coordinate = Coordinate> {
             this.imageData.data[i + 3] = 255;
         }
 
-        this.gridBounds = BoundingBox.fromDimension<C>(width-1, height-1);
+        this.gridBounds = BoundingBox.fromDimension<C>(width - 1, height - 1);
     }
 
     public applyImageData(ctx: CanvasImageData): void {
@@ -66,8 +66,8 @@ export class ImageDataHelper<C extends Coordinate = Coordinate> {
         this.imageData.data[idx + 2] = color[2]; // Blue
 
         let alpha = color[3];
-        if (alpha <= 1){
-           alpha*=255;
+        if (alpha <= 1) {
+            alpha *= 255;
         }
         this.imageData.data[idx + 3] = alpha; // Alpha
     }

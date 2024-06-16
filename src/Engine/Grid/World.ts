@@ -9,7 +9,7 @@ export type ChunkCoordinate = Distinct<Coordinate, 'Chunk'>;
 export type WorldCoordinate = Distinct<Coordinate, 'World'>;
 
 export class World {
-    private readonly chunks = new Map<string, Chunk|undefined>();
+    private readonly chunks = new Map<string, Chunk | undefined>();
     private readonly activeChunks = new Set<{ chunk: Chunk, coordinate: ChunkCoordinate }>();
 
     constructor(
@@ -23,7 +23,7 @@ export class World {
         return this.chunks.size;
     }
 
-    getParticle(coordinate: WorldCoordinate): Particle|undefined {
+    getParticle(coordinate: WorldCoordinate): Particle | undefined {
         return this.getChunk(coordinate)?.getParticle(coordinate);
     }
 
@@ -88,7 +88,7 @@ export class World {
         } as ChunkCoordinate;
     }
 
-    private getChunk(coordinate: WorldCoordinate): Chunk|undefined {
+    private getChunk(coordinate: WorldCoordinate): Chunk | undefined {
         const chunkCoordinate = this.getChunkCoordinate(coordinate);
         const key = this.toKey(chunkCoordinate);
         if (this.chunks.has(key)) {
@@ -98,14 +98,14 @@ export class World {
         return this.createChunk(chunkCoordinate);
     }
 
-    private createChunk(coordinate: ChunkCoordinate): Chunk|undefined {
+    private createChunk(coordinate: ChunkCoordinate): Chunk | undefined {
         const {x, y} = coordinate;
         const bounds = BoundingBox.fromDimension(this.chunkSize, this.chunkSize, {
             x: x * this.chunkSize,
             y: y * this.chunkSize
         });
 
-        let chunk:Chunk|undefined;
+        let chunk: Chunk | undefined;
         if (this.outerBounds?.containsBoundingBox(bounds) !== false) {
             chunk = new Chunk(bounds);
         }

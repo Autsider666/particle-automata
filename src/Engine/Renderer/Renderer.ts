@@ -17,11 +17,11 @@ export abstract class Renderer {
     protected readonly particleSize: number;
 
     constructor({
-                              ctx,
-                              world,
-                              particleSize,
-                              dimensions,
-                          }: RendererProps) {
+                    ctx,
+                    world,
+                    particleSize,
+                    dimensions,
+                }: RendererProps) {
         this.ctx = ctx;
         this.world = world;
         this.particleSize = particleSize;

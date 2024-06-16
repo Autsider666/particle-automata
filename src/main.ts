@@ -55,7 +55,7 @@ if (debugMode) {
     renderModes.push(RenderMode.Debug);
 }
 
-const particleSize = URLParams.get('particleSize', "number") ?? 3;
+const particleSize = URLParams.get('particleSize', "number") ?? 5;
 const config: Config = {
     world: {
         outerBounds: Traversal.getGridDimensions(
@@ -70,7 +70,7 @@ const config: Config = {
         size: URLParams.get('chunkSize', "number") ?? 10,
     },
     simulation: {
-        fps: URLParams.get('fps', "number") ?? 40,
+        fps: URLParams.get('fps', "number") ?? 60,
         particleSize,
         startOnInit: autoStartMode,
     },

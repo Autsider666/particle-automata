@@ -11,10 +11,10 @@ export type Config = {
         fps: number,
         particleSize: number,
         imageDataMode?: boolean,
-        startOnInit?:boolean,
+        startOnInit?: boolean,
     },
-    worker?:{
-      canvasIdentifier: string,
+    worker?: {
+        canvasIdentifier: string,
     },
     debug?: {
         draw?: boolean,

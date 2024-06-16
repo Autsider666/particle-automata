@@ -46,7 +46,7 @@ export class Color {
         lightness = Math.max(0, Math.min(100, lightness));
         const alpha = Math.min(Math.max(a + this.randomByConfig(alphaModifier), 0), 1);
 
-        return this.HSLAtoRGBA([hue/360, saturation/100, lightness/100, alpha]);
+        return this.HSLAtoRGBA([hue / 360, saturation / 100, lightness / 100, alpha]);
     }
 
     protected static StringToRGBA(color: string): RGBATuple {
@@ -114,7 +114,7 @@ export class Color {
             b = this.hue2rgb(p, q, h - 1 / 3);
         }
 
-        return [Math.round(r*255), Math.round(g*255) , Math.round(b*255) , a];
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), a];
     }
 
     private static hue2rgb(p: number, q: number, t: number): number {

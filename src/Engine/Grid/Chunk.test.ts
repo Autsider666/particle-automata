@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
-import {ParticleType} from "../Particle/ParticleType.ts";
 import {BoundingBox} from "../../Utility/Excalibur/BoundingBox.ts";
+import {ParticleType} from "../Particle/ParticleType.ts";
 import {Chunk} from './Chunk.ts';
 import {WorldCoordinate} from "./World.ts";
 

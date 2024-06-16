@@ -23,7 +23,7 @@ type ListenerStore<TEventMap extends EventMap> = {
 /**
  * Excalibur's typed event emitter, this allows events to be sent with any string to Type mapping
  */
-export class EventHandler<TEventMap extends EventMap> implements EventHandlerInterface<TEventMap>{
+export class EventHandler<TEventMap extends EventMap> implements EventHandlerInterface<TEventMap> {
     private _paused = false;
     private _listeners: ListenerStore<TEventMap> = {};
     private _listenersOnce: ListenerStore<TEventMap> = {};
