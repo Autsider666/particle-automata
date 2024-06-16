@@ -5,26 +5,40 @@ export class FrameRateManager {
     private interval: number;
 
     constructor(
-        private readonly callback: () => void,
+        private readonly updateCallback: () => void,
+        private readonly drawCallback: () => void,
         fps: number,
         private paused: boolean = false,
     ) {
 
-        this.interval = 1000.0 / fps;
+        if (fps === 0) {
+            this.paused = true;
+            this.interval = 0;
+        } else {
+            this.interval = 1000.0 / fps;
+        }
 
         this.step();
     }
 
-    public start():void {
+    public update(): void {
+        this.updateCallback();
+    }
+
+    public draw(): void {
+        this.drawCallback();
+    }
+
+    public start(): void {
         this.paused = false;
     }
 
-    public stop():void {
+    public stop(): void {
         this.paused = true;
     }
 
-    public toggle(paused: boolean = !this.paused): void {
-        this.paused = paused;
+    public toggle(): void {
+        this.paused = !this.paused;
     }
 
     public setFPS(fps: number): void {
@@ -33,14 +47,18 @@ export class FrameRateManager {
 
     private step(): void {
         requestAnimationFrame(this.step.bind(this));
+        if (this.interval === 0 || this.paused) {
+            return;
+        }
 
         this.now = Date.now();
         this.delta = this.now - this.then;
 
-        if (this.delta > this.interval && !this.paused) {
+        if (this.delta > this.interval) {
             this.then = this.now - (this.delta % this.interval);
 
-            this.callback();
+            this.update();
+            this.draw();
         }
     }
 }

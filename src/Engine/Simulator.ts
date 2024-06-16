@@ -20,7 +20,7 @@ export class Simulator implements EventListenerInterface<SimulatorEvent> {
     }
 
     public update(): void {
-        this.world.iterateChunks(this.prepareForUpdate.bind(this));
+        this.world.iterateAllChunks(this.prepareForUpdate.bind(this));
 
         this.events.emit('preUpdate', this.world);
 

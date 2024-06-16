@@ -1,70 +1,94 @@
 import {FrameRateManager} from "../../Utility/FrameRateManager.ts";
 import {ObviousNonsenseBehaviourManager} from "../Behaviour/ObviousNonsenseBehaviourManager.ts";
+import {WorldCoordinate} from "../Grid/World.ts";
 import {ParticleType} from "../Particle/ParticleType.ts";
-import {CanvasRenderer} from "../Renderer/CanvasRenderer.ts";
-import {ImageDataRenderer} from "../Renderer/ImageDataRenderer.ts";
 import {Renderer} from "../Renderer/Renderer.ts";
+import {RendererBuilder} from "../Renderer/RendererBuilder.ts";
 import {Simulator} from "../Simulator.ts";
 import {Config} from "../Type/Config.ts";
+import {RenderMode} from "../Type/RenderMode.ts";
 import {WorkerMessage} from "../Type/WorkerMessage.ts";
 import {SimpleWorldBuilder} from "../World/SimpleWorldBuilder.ts";
-import {MessageHandler} from "./Event/MessageHandler.ts";
+import {MessageHandler} from "./MessageHandler.ts";
+
+type RendererMap = { [key in RenderMode]?: Renderer };
 
 let config: Config;
-let ctx: OffscreenCanvasRenderingContext2D;
 let simulator: Simulator;
-let renderer: Renderer;
+const renderers: RendererMap = {};
 
 const handler = new MessageHandler<WorkerMessage>(undefined, false);
-const fpsManager = new FrameRateManager(() => {
-    simulator.update();
-    renderer.draw();
-}, 10, true);
+const fpsManager = new FrameRateManager(
+    () => simulator.update(),
+    () => Object.values(renderers).forEach(renderer => renderer.draw()),
+    0, true);
 
 
-handler.on('init', ({
-                        canvas: offscreenCanvas,
-                        config: browserConfig,
-                    }
-) => {
+handler.on('init', (browserConfig) => {
     config = browserConfig;
-    fpsManager.setFPS(config.simulation.fps);
-    const offscreenCtx = offscreenCanvas.getContext('2d');
-    if (!offscreenCtx) {
-        throw new Error('No ctx?');
-    }
-
-    ctx = offscreenCtx;
 
     const world = new SimpleWorldBuilder().build(config);
 
     simulator = new Simulator(world, ObviousNonsenseBehaviourManager);
-    if (config.simulation.imageDataMode === true) {
-        renderer = new ImageDataRenderer(ctx, world, config.simulation.particleSize, config.world.height, config.world.width);
-    } else {
-        renderer = new CanvasRenderer(ctx, world, config.simulation.particleSize, config.world.height, config.world.width);
-    }
 
     const centerX = Math.round(config.world.width / 2);
     const centerOffset: number = config.debug?.fillerOffset ?? 0;
     let fillerLimit: number = config.debug?.fillerLimit ?? -1;
-    simulator.on('preUpdate',() =>{
-        if (fillerLimit !== 0) {
-            world.iterateAllParticles((_particle, coordinate) => {
-                if (fillerLimit === 0) {
-                    return;
-                }
+    simulator.on('preUpdate', () => {
+        if (fillerLimit === 0) {
+            return;
+        }
 
-                const {x, y} = coordinate;
-                if (x > centerX - centerOffset && x < centerX + centerOffset && y === 0) {
-                    world.setParticle(coordinate, ParticleType.Sand);
-                    fillerLimit--;
-                }
-            });
+        for (let x = centerX - centerOffset; x < centerX + centerOffset; x++) {
+            if (fillerLimit !== 0 && x % 2 === 0) {
+                world.setParticle({x, y: 0} as WorldCoordinate, ParticleType.Sand);
+                fillerLimit--;
+            }
         }
     });
 
-    postMessage('Worker started!');
+    fpsManager.setFPS(config.simulation.fps);
 
-    fpsManager.start();
+    // if (config.simulation.imageDataMode === true) {
+    //     renderer = new ImageDataRenderer(ctx, world, config.simulation.particleSize, config.world.height, config.world.width);
+    // } else {
+    //     renderer = new CanvasRenderer(ctx, world, config.simulation.particleSize, config.world.height, config.world.width);
+    // }
+
+
+    // fpsManager.setFPS(config.simulation.fps);
+    // const offscreenCtx = offscreenCanvas.getContext('2d');
+    // if (!offscreenCtx) {
+    //     throw new Error('No ctx?');
+    // }
+    //
+    // ctx = offscreenCtx;
+
+    handler.on('start', () => fpsManager.start());
+    handler.on('stop', () => fpsManager.stop());
+
+    handler.on('startRendering', ({mode, canvas}) => {
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            throw new Error('Unable to get context from canvas');
+        }
+
+        console.log('startRendering', mode);
+
+        renderers[mode] = RendererBuilder.build(mode, {
+            config, world, ctx, dimensions: canvas
+        });
+
+        fpsManager.draw();
+    });
+
+    handler.on('stopRendering', ({mode}) => {
+        console.log('stopRendering', mode);
+
+        renderers[mode] = undefined;
+    });
+
+    handler.emit('ready', undefined);
+
+    // fpsManager.start(); //TODO add to config?
 });

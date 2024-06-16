@@ -45,6 +45,6 @@ export class ImageDataHelper {
         this.imageData.data[idx] = color[0]; // Red
         this.imageData.data[idx + 1] = color[1]; // Green
         this.imageData.data[idx + 2] = color[2]; // Blue
-        // this.imageData.data[idx + 3] = 255; // Alpha
+        this.imageData.data[idx + 3] = color[3]; // Alpha
     }
 }

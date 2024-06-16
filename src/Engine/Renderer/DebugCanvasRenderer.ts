@@ -1,48 +1,35 @@
 import {World} from "../Grid/World.ts";
+import {Renderer} from "./Renderer.ts";
 
-export class DebugCanvasRenderer {
+export class DebugCanvasRenderer implements Renderer {
     private firstDraw: boolean = true;
 
     constructor(
+        private readonly ctx: CanvasRect & CanvasFillStrokeStyles & CanvasPathDrawingStyles,
         private readonly world: World,
         private readonly particleSize: number,
     ) {
     }
 
-    draw(ctx: CanvasRect&CanvasFillStrokeStyles&CanvasPathDrawingStyles): void {
-        // if (this.firstDraw && !this.debug) {
-        //     ctx.clearRect(0, 0, this.width, this.height);
-        // }
+    draw(): void {
+        if (this.firstDraw){
+            this.firstDraw = false;
+            return;
+        }
 
-        // this.world.iterateParticles((particle, {x, y}) => {
-        //     if (particle.ephemeral) {
-        //         ctx.clearRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
-        //         return;
-        //     }
-        //
-        //     ctx.fillStyle = particle.color;
-        //     ctx.fillRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
-        // }, true);
-
-        this.world.iterateChunks((chunk) => {
-            // if (!chunk.isActive() && !this.firstDraw && !this.debug) {
-            //     return;
-            // }
-
-            chunk.iterateParticles((particle, {x, y}) => { //TODO only changed particles
-                if (!particle.ephemeral) {
-                    ctx.fillStyle = particle.color;
-                    ctx.fillRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
-                } else {
-                    ctx.clearRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
-                }
-            });
-
-            if (!this.firstDraw && chunk.isActive()) { //TODO split debug drawing of to DebugCanvasRenderer and a overlapping debug canvas?
-                ctx.strokeStyle = 'rgb(50,114,99)';
-                ctx.lineWidth = 1;
-                const halfStroke = ctx.lineWidth * 0.5;
-                ctx.strokeRect(
+        this.world.iterateAllChunks((chunk) => {
+            this.ctx.lineWidth = 1;
+            const halfStroke = this.ctx.lineWidth * 0.5;
+            if (chunk.isActive()) {
+                this.ctx.strokeStyle = 'rgb(50,114,99)';
+                this.ctx.strokeRect(
+                    chunk.bounds.left * this.particleSize + halfStroke,
+                    chunk.bounds.top * this.particleSize + halfStroke,
+                    chunk.bounds.width * this.particleSize - halfStroke * 2,
+                    chunk.bounds.height * this.particleSize - halfStroke * 2,
+                );
+            } else {
+                this.ctx.clearRect(
                     chunk.bounds.left * this.particleSize + halfStroke,
                     chunk.bounds.top * this.particleSize + halfStroke,
                     chunk.bounds.width * this.particleSize - halfStroke * 2,
@@ -50,9 +37,5 @@ export class DebugCanvasRenderer {
                 );
             }
         });
-
-        if (this.firstDraw) {
-            this.firstDraw = false;
-        }
     }
 }

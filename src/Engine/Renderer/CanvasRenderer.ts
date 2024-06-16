@@ -1,15 +1,16 @@
 import {World} from "../Grid/World.ts";
+import {Renderer} from "./Renderer.ts";
 
 
-export class CanvasRenderer {
+export class CanvasRenderer implements Renderer {
     protected firstDraw: boolean = true;
 
     constructor(
-        protected readonly ctx: CanvasRect&CanvasFillStrokeStyles,
+        protected readonly ctx: CanvasRect & CanvasFillStrokeStyles,
         protected readonly world: World,
         protected readonly particleSize: number,
-        protected readonly height: number = window.innerHeight,
-        protected readonly width: number = window.innerWidth,
+        protected readonly height: number,
+        protected readonly width: number,
     ) {
     }
 
@@ -18,7 +19,7 @@ export class CanvasRenderer {
             this.ctx.clearRect(0, 0, this.width, this.height);
         }
 
-        this.world.iterateChunks((chunk) => {
+        this.world.iterateAllChunks((chunk) => {
             if (!chunk.isActive() && !this.firstDraw) {
                 return;
             }

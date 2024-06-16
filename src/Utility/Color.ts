@@ -9,7 +9,7 @@ export type ColorVariance = {
     alpha?: ColorVarianceConfig,
 };
 
-export type ColorTuple = [number, number, number];
+export type ColorTuple = [number, number, number, number];
 
 const random = new Random(); //FIXME dirty dirty
 
@@ -44,10 +44,11 @@ export class Color {
         const r = parseInt(result[1], 16);
         const g = parseInt(result[2], 16);
         const b = parseInt(result[3], 16);
+        const a = parseInt(result[4] ?? 1, 16) * 255;
         // r /= 255;
         // g /= 255;
         // b /= 255;
-        return [r, g, b];
+        return [r, g, b, a];
     }
 
     protected static toHSLA(color: string): { h: number, s: number, l: number, a: number } {

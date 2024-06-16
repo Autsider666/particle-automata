@@ -1,11 +1,17 @@
 import {EventKey, EventMap} from "../../Utility/Excalibur/EventHandler.ts";
 import {Coordinate} from "../../Utility/Type/Dimensional.ts";
 import {Config} from "./Config.ts";
+import {RenderMode} from "./RenderMode.ts";
 
 export type WorkerMessage = {
-    init: {
+    init: Config,
+    ready: undefined,
+    startRendering: {
+        mode: RenderMode,
         canvas: OffscreenCanvas,
-        config: Config,
+    },
+    stopRendering: {
+        mode: RenderMode,
     },
     start: undefined,
     stop: undefined,

@@ -9,10 +9,10 @@ export class SimpleWorldBuilder implements WorldBuilder {
         const initialWorldBounds = BoundingBox.fromDimension(config.world.width, config.world.height);
         const world = new World(initialWorldBounds, config.chunks.size); //TODO add outer bounds
 
-        const leftOffset: number = 10;
-        const rightOffset: number = 10;
+        const leftOffset: number = Math.round(config.world.width/4);
+        const rightOffset: number = leftOffset;
         const topOffset: number = Math.round(initialWorldBounds.bottom/2);
-        const bottomOffset: number = 10;
+        const bottomOffset: number = Math.round(config.world.height/5);
 
         world.iterateAllParticles((_particle, coordinate) => {
             const {x, y} = coordinate;

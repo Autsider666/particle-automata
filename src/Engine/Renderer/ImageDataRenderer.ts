@@ -2,9 +2,10 @@ import {ColorTuple} from "../../Utility/Color.ts";
 import {ImageDataHelper} from "../../Utility/ImageDataHelper.ts";
 import {Coordinate} from "../../Utility/Type/Dimensional.ts";
 import {World} from "../Grid/World.ts";
+import {Renderer} from "./Renderer.ts";
 
 
-export class ImageDataRenderer {
+export class ImageDataRenderer implements Renderer {
     private readonly imageData: ImageDataHelper;
     private firstDraw: boolean = true;
 
@@ -12,25 +13,25 @@ export class ImageDataRenderer {
         private readonly ctx: CanvasImageData,
         private readonly world: World,
         private readonly particleSize: number,
-        height: number = window.innerHeight,
-        width: number = window.innerWidth,
+        height: number,
+        width: number,
     ) {
         this.imageData = new ImageDataHelper(
-            width * 2,
+            width,
             height,
             particleSize,
         );
     }
 
     draw(): void {
-        if (this.firstDraw) {
-            // ctx.clearRect(0, 0, this.width, this.height);
-        }
+        // if (this.firstDraw) {
+        //     this.ctx.clearRect(0, 0, this.width, this.height);
+        // }
 
-        this.world.iterateChunks((chunk) => {
-            // if (!chunk.isActive() && !this.firstDraw) {
-            //     return;
-            // }
+        this.world.iterateAllChunks((chunk) => {
+            if (!chunk.isActive() && !this.firstDraw) {
+                return;
+            }
 
             chunk.iterateParticles((particle, coordinate): void => { //TODO only changed particles
                 if (particle.ephemeral) {
@@ -56,11 +57,11 @@ export class ImageDataRenderer {
             },
             this.particleSize,
             this.particleSize,
-            [0, 0, 0],
+            [0, 0, 0, 0],
         );
     }
 
-    private fillGridElement({x,y}: Coordinate, color: ColorTuple) {
+    private fillGridElement({x, y}: Coordinate, color: ColorTuple) {
         this.imageData.fillRectangle(
             {
                 x: x * this.particleSize,

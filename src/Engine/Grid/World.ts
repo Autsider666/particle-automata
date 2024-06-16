@@ -60,14 +60,14 @@ export class World {
         return this.getChunk(coordinate).containsCoordinate(coordinate);
     }
 
-    public iterateChunks(callback: (chunk: Chunk, coordinate: ChunkCoordinate) => void): void {
+    public iterateAllChunks(callback: (chunk: Chunk, coordinate: ChunkCoordinate) => void): void {
         for (const [key, chunk] of this.chunks) {
             callback(chunk, this.toCoordinate(key));
         }
     }
 
     public iterateAllParticles(callback: (particle: Particle, coordinate: WorldCoordinate) => void): void {
-        this.iterateChunks((chunk: Chunk) => {
+        this.iterateAllChunks((chunk: Chunk) => {
             chunk.iterateParticles((particle, coordinate) => {
                 callback(particle, coordinate);
             });

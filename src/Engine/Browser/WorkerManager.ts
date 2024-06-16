@@ -1,41 +1,31 @@
 import {EventEmitterInterface} from "../../Utility/Event/EventEmitterInterface.ts";
+import {EventKey} from "../../Utility/Excalibur/EventHandler.ts";
 import {Config} from "../Type/Config.ts";
+import {RenderMode} from "../Type/RenderMode.ts";
 import {WorkerMessage} from "../Type/WorkerMessage.ts";
-import {MessageHandler} from "../Worker/Event/MessageHandler.ts";
+import {MessageHandler} from "../Worker/MessageHandler.ts";
 import WebWorker from './../Worker/WebWorker.ts?worker';
 
-export class WorkerManager<Events extends WorkerMessage = WorkerMessage> {
+export class WorkerManager<Events extends WorkerMessage = WorkerMessage> implements EventEmitterInterface<Events> {
     private readonly worker: Worker;
     private readonly handler: MessageHandler<Events>;
+    private workerOnline: boolean = false;
 
     constructor(
         config: Config,
+        readyCallback?: () => void,
     ) {
-        const workerConfig = config.worker;
-        if (!workerConfig) {
-            throw new Error('Can\'t create WorkerManager without worker config');
-        }
-
-        const canvas = document.querySelector<HTMLCanvasElement>(workerConfig.canvasIdentifier);
-        if (!canvas) {
-            throw new Error('No canvas matching canvasIdentifier found: ' + workerConfig.canvasIdentifier);
-        }
-
-        // canvas.height = excaliburCanvas.height;
-        // canvas.width = excaliburCanvas.width;
-
         this.worker = new WebWorker();
-        this.worker.onmessage = event => console.log(event.data);
-        this.worker.onerror = event => console.error(event);
-
         this.handler = new MessageHandler<Events>(this.worker);
 
-        const offscreenCanvas = canvas.transferControlToOffscreen();
+        this.handler.on('ready', () => {
+            this.workerOnline = true;
+            if (readyCallback) {
+                readyCallback();
+            }
+        });
 
-        this.handler.emit('init', {
-            canvas: offscreenCanvas,
-            config,
-        }, [offscreenCanvas]);
+        this.handler.emit('init', config);
     }
 
     public pipeWorkerEvents(handler: EventEmitterInterface<Events>): void {
@@ -44,5 +34,34 @@ export class WorkerManager<Events extends WorkerMessage = WorkerMessage> {
 
     public pipeEventsToWorker(handler: EventEmitterInterface<Events>): void {
         handler.pipe(this.handler);
+    }
+
+    public startRendering(mode: RenderMode, canvas: HTMLCanvasElement): void {
+        if (!this.workerOnline) {
+            throw new Error('Unable to start rendering this when worker is not online.');
+        }
+
+        const offscreenCanvas = canvas.transferControlToOffscreen();
+
+        this.handler.emit('startRendering', {
+            mode,
+            canvas: offscreenCanvas,
+        }, [offscreenCanvas]);
+    }
+
+    public stopRendering(mode: RenderMode): void {
+        if (!this.workerOnline) {
+            throw new Error('Unable to start rendering this when worker is not online.');
+        }
+
+        this.handler.emit('stopRendering', {mode});
+    }
+
+    emit<TEventName extends EventKey<Events>>(eventName: TEventName, event: Events[TEventName]): void {
+        this.handler.emit(eventName, event);
+    }
+
+    pipe(emitter: EventEmitterInterface<Events>): void {
+        this.handler.pipe(emitter);
     }
 }
