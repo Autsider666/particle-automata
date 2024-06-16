@@ -2,7 +2,7 @@
  * Taken from the BoundingBox of Excalibur https://excaliburjs.com/
  * https://github.com/excaliburjs/Excalibur/blob/main/src/engine/Collision/BoundingBox.ts
  */
-import type {Coordinate} from "../../../Utility/Type/Dimensional.ts";
+import type {Coordinate} from "../Type/Dimensional.ts";
 
 export class BoundingBox {
     constructor(

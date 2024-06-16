@@ -1,4 +1,4 @@
-import {World} from "./World.ts";
+import {World} from "../Grid/World.ts";
 
 export class CanvasRenderer {
     private firstDraw: boolean = true;

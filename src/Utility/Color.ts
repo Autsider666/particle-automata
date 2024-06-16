@@ -1,4 +1,4 @@
-import {Random} from "../Engine/Utility/Excalibur/Random.ts";
+import {Random} from "./Excalibur/Random.ts";
 
 export type ColorVarianceConfig = { min: number, max: number } | { value: number }
 
@@ -8,6 +8,8 @@ export type ColorVariance = {
     lightness?: ColorVarianceConfig,
     alpha?: ColorVarianceConfig,
 };
+
+export type ColorTuple = [number, number, number];
 
 const random = new Random(); //FIXME dirty dirty
 
@@ -27,6 +29,25 @@ export class Color {
         const alpha = Math.min(Math.max(a + this.randomByConfig(alphaModifier), 0), 1);
 
         return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha.toFixed(1)})`;
+    }
+
+    static varyColorTuple(color: string): ColorTuple {
+        return this.toRGBA(color);
+    }
+
+    protected static toRGBA(color: string): ColorTuple {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(color);
+        if (!result) {
+            throw new Error('Invalid color hex: ' + color);
+        }
+
+        let r = parseInt(result[1], 16);
+        let g = parseInt(result[2], 16);
+        let b = parseInt(result[3], 16);
+        r /= 255;
+        g /= 255;
+        b /= 255;
+        return [r, g, b];
     }
 
     protected static toHSLA(color: string): { h: number, s: number, l: number, a: number } {

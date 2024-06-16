@@ -15,6 +15,14 @@ export class FrameRateManager {
         this.step();
     }
 
+    public start():void {
+        this.paused = false;
+    }
+
+    public stop():void {
+        this.paused = true;
+    }
+
     public toggle(paused: boolean = !this.paused): void {
         this.paused = paused;
     }

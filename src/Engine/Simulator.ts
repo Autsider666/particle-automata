@@ -1,10 +1,17 @@
+import {EventListenerInterface} from "../Utility/Event/EventListenerInterface.ts";
+import {EventHandler, EventKey, Handler} from "../Utility/Excalibur/EventHandler.ts";
 import {Constructor} from "../Utility/Type/Constructor.ts";
 import {BehaviourManager} from "./Behaviour/BehaviourManager.ts";
 import {Chunk} from "./Grid/Chunk.ts";
 import {World} from "./Grid/World.ts";
 
-export class Simulator {
+export type SimulatorEvent = {
+    preUpdate: World,
+}
+
+export class Simulator implements EventListenerInterface<SimulatorEvent> {
     private readonly chunkManagers = new Map<Chunk, BehaviourManager>();
+    private readonly events = new EventHandler<SimulatorEvent>();
 
     constructor(
         private readonly world: World,
@@ -15,11 +22,22 @@ export class Simulator {
     public update(): void {
         this.world.iterateChunks(this.prepareForUpdate.bind(this));
 
+        this.events.emit('preUpdate', this.world);
+
         const duplicateCheck = new Set<number>();
 
         for (const [, manager] of this.chunkManagers) {
             manager.updateActiveChunk(duplicateCheck);
         }
+    }
+
+
+    on<TEventName extends EventKey<SimulatorEvent>>(eventName: TEventName, handler: Handler<SimulatorEvent[TEventName]>): void {
+        this.events.on(eventName, handler);
+    }
+
+    off<TEventName extends EventKey<SimulatorEvent>>(eventName: TEventName, handler: Handler<SimulatorEvent[TEventName]>): void {
+        this.events.off(eventName, handler);
     }
 
     private prepareForUpdate(chunk: Chunk): void {

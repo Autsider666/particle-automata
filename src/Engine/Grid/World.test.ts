@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import {BoundingBox} from "../Utility/Excalibur/BoundingBox.ts";
+import {BoundingBox} from "../../Utility/Excalibur/BoundingBox.ts";
 import {World} from "./World.ts";
 
 const testBounds = BoundingBox.fromDimension(10, 10);
