@@ -6,26 +6,35 @@ import {WorldBuilder} from "./WorldBuilder.ts";
 
 export class SimpleWorldBuilder implements WorldBuilder {
     build(config: Config): World {
-        const initialWorldBounds = BoundingBox.fromDimension(config.world.width, config.world.height);
-        const world = new World(initialWorldBounds, config.chunks.size); //TODO add outer bounds
+        const bounds = config.world.outerBounds;
+        let outerBounds: BoundingBox | undefined;
+        if (bounds) {
+            outerBounds = BoundingBox.fromDimension(bounds.width, bounds.height);
+        }
 
-        const leftOffset: number = Math.round(config.world.width/4);
+        const world = new World(config.chunks.size, outerBounds);
+
+        if (!bounds || !outerBounds){
+            return world;
+        }
+
+        const leftOffset: number = Math.round(bounds.height / 4);
         const rightOffset: number = leftOffset;
-        const topOffset: number = Math.round(initialWorldBounds.bottom/2);
-        const bottomOffset: number = Math.round(config.world.height/5);
+        const topOffset: number = Math.round(outerBounds.bottom / 2);
+        const bottomOffset: number = Math.round(bounds.height / 5);
 
         world.iterateAllParticles((_particle, coordinate) => {
             const {x, y} = coordinate;
-            if (x === initialWorldBounds.left + leftOffset
-                || x === initialWorldBounds.right - (rightOffset + 1)
+            if (x === outerBounds.left + leftOffset
+                || x === outerBounds.right - (rightOffset + 1)
                 // || y === initialWorldBounds.top
-                || y === initialWorldBounds.bottom - (bottomOffset + 1)
+                || y === outerBounds.bottom - (bottomOffset + 1)
             ) {
                 if (y < topOffset
-                    || y > initialWorldBounds.bottom - (bottomOffset + 1)
+                    || y > outerBounds.bottom - (bottomOffset + 1)
                     || x < leftOffset
-                    || x > initialWorldBounds.right - (rightOffset+1)
-                    || x === Math.round(initialWorldBounds.right / 2)) {
+                    || x > outerBounds.right - (rightOffset + 1)
+                    || x === Math.round(outerBounds.right / 2)) {
                     return;
                 }
 

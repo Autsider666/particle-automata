@@ -62,6 +62,19 @@ const particleTypes = {
         // density: 500,
         immovable: true,
     },
+    Water: {
+        color: '#1573a9',
+        colorVariance: genericColorVariance,
+        // colorVariance: {
+        //     lightness: {min: -5, max: 10},
+        //     saturation: {min: -10, max: 10},
+        //     alpha: {min: -0.5, max: 0}
+        // },
+        density: 100,
+        maxSpeed: 8,
+        acceleration: 0.4,
+        fluidity: 1, //FIXME
+    }
 } as const satisfies ParticleTypeMap;
 
 const particleTypesButClones = {} as Record<ParticleType, ParticleTypeData>;

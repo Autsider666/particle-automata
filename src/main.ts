@@ -25,9 +25,6 @@ import {URLParams} from "./Utility/URLParams.ts";
 //     throw new Error('No 2D context available');
 // }
 
-// canvas.width = window.innerWidth;
-// canvas.height = window.innerHeight;
-
 const workerMode: boolean = URLParams.get('worker', "boolean") ?? false;
 const autoStartMode: boolean = URLParams.get('autoStart', "boolean") ?? true;
 
@@ -60,8 +57,10 @@ if (debugMode) {
 
 const config: Config = {
     world: {
-        width: URLParams.get('width', "number") ?? 200,
-        height: URLParams.get('height', "number") ?? 150,
+        outerBounds: {
+            width: URLParams.get('width', "number") ?? window.innerWidth,
+            height: URLParams.get('height', "number") ?? window.innerHeight,
+        }
     },
     chunks: {
         size: URLParams.get('chunkSize', "number") ?? 10,
@@ -69,6 +68,7 @@ const config: Config = {
     simulation: {
         fps: URLParams.get('fps', "number") ?? 40,
         particleSize: URLParams.get('particleSize', "number") ?? 3,
+        startOnInit: autoStartMode,
     },
     worker: {
         canvasIdentifier: 'canvas#offscreen',
@@ -87,7 +87,7 @@ if (!config.worker) {
 
 
 const events = new EventHandler<WorkerMessage>();
-let hasStarted: boolean = true;
+let hasStarted: boolean = autoStartMode;
 document.body.addEventListener('keypress', ({code}) => {
     if (code !== 'Space') {
         return;
@@ -96,6 +96,11 @@ document.body.addEventListener('keypress', ({code}) => {
     events.emit(hasStarted ? 'stop' : 'start', undefined);
     hasStarted = !hasStarted;
 });
+
+window.addEventListener('resize', () => events.emit('resize', {
+    width: window.innerWidth,
+    height: window.innerHeight,
+}));
 
 if (workerMode) {
     const workerManager = new WorkerManager(
@@ -161,7 +166,7 @@ if (workerMode) {
         document.body.appendChild(stats.dom);
     }
 
-    const centerX = Math.round(config.world.width / 2);
+    const centerX = Math.round((config.world.outerBounds?.width ?? window.innerWidth) / 2);
     const centerOffset: number = config.debug?.fillerOffset ?? 0;
     let fillerLimit: number = config.debug?.fillerLimit ?? -1;
     const fpsManager = new FrameRateManager(
@@ -171,7 +176,7 @@ if (workerMode) {
             if (fillerLimit !== 0) {
                 for (let x = centerX - centerOffset; x < centerX + centerOffset; x++) {
                     if (fillerLimit !== 0 && x % 2 === 0) {
-                        world.setParticle({x, y: 0} as WorldCoordinate, ParticleType.Sand);
+                        world.setParticle({x, y: 0} as WorldCoordinate, ParticleType.Water);
                         fillerLimit--;
                     }
                 }
@@ -189,4 +194,5 @@ if (workerMode) {
 
     events.on('start', () => fpsManager.start());
     events.on('stop', () => fpsManager.stop());
+    events.on('resize', dimensions => renderers.forEach(renderer => renderer.resize(dimensions)));
 }

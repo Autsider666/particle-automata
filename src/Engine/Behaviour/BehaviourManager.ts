@@ -20,7 +20,7 @@ export abstract class BehaviourManager {
     ) {
     }
 
-    updateActiveChunk(duplicateCheck:Set<number>): void {
+    updateActiveChunk(duplicateCheck: Set<number>): void {
         if (!this.chunk.isActive()) {
             return;
         }
@@ -83,16 +83,16 @@ export abstract class BehaviourManager {
         }
     }
 
-    moveParticle(coordinate: WorldCoordinate, direction: Direction): void {
+    moveParticle(coordinate: WorldCoordinate, direction: Direction): boolean {
         const destination = Traversal.getDestinationCoordinate(coordinate, direction);
         if (this.chunk.containsCoordinate(coordinate) && this.chunk.containsCoordinate(destination)) {
-            this.chunk.moveParticle<DirtyParticle>(this.chunk, coordinate, destination).dirty = true;
-        } else {
-            this.world.moveParticle<DirtyParticle>(coordinate, direction).dirty = true;
+            return this.chunk.moveParticle<DirtyParticle>(this.chunk, coordinate, destination).dirty = true;
         }
+
+        return this.world.moveParticle<DirtyParticle>(coordinate, direction);
     }
 
-    wakeChunk(coordinate:WorldCoordinate):void {
+    wakeChunk(coordinate: WorldCoordinate): void {
         this.world.wakeChunk(coordinate);
     }
 

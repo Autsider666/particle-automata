@@ -1,7 +1,9 @@
 export type Config = {
     world: {
-        width: number,
-        height: number,
+        outerBounds?: {
+            width: number,
+            height: number,
+        }
     },
     chunks: {
         size: number,
@@ -10,6 +12,7 @@ export type Config = {
         fps: number,
         particleSize: number,
         imageDataMode?: boolean,
+        startOnInit?:boolean,
     },
     worker?:{
       canvasIdentifier: string,

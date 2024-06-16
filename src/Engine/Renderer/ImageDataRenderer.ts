@@ -1,21 +1,35 @@
 import {ColorTuple} from "../../Utility/Color.ts";
 import {ImageDataHelper} from "../../Utility/ImageDataHelper.ts";
-import {Coordinate} from "../../Utility/Type/Dimensional.ts";
-import {World} from "../Grid/World.ts";
+import {Coordinate, Dimensions} from "../../Utility/Type/Dimensional.ts";
+import {World, WorldCoordinate} from "../Grid/World.ts";
+import {Particle} from "../Particle/Particle.ts";
 import {Renderer} from "./Renderer.ts";
 
 
 export class ImageDataRenderer implements Renderer {
-    private readonly imageData: ImageDataHelper;
+    private imageData: ImageDataHelper;
     private firstDraw: boolean = true;
 
     constructor(
         private readonly ctx: CanvasImageData & CanvasRect,
         private readonly world: World,
         private readonly particleSize: number,
-        private readonly height: number,
-        private readonly width: number,
+        private height: number,
+        private width: number,
     ) {
+        this.imageData = new ImageDataHelper(
+            width,
+            height,
+        );
+    }
+
+    resize({height, width}: Dimensions): void {
+        this.clear();
+        this.firstDraw = true;
+        this.height = height;
+        this.width = width;
+        this.clear();
+
         this.imageData = new ImageDataHelper(
             width,
             height,
@@ -24,24 +38,31 @@ export class ImageDataRenderer implements Renderer {
 
     draw(): void {
         if (this.firstDraw) {
-            this.ctx.clearRect(0, 0, this.width, this.height);
-        }
+            this.clear();
 
-        this.world.iterateActiveChunks((chunk) => {
-            chunk.iterateDirtyParticles((particle, coordinate): void => { //TODO only changed particles
-                if (particle.ephemeral) {
-                    this.clearGridElement(coordinate);
-                } else if (particle.colorTuple) {
-                    this.fillGridElement(coordinate, particle.colorTuple);
-                }
-            });
-        });
+            this.world.iterateAllParticles(this.handleParticle.bind(this));
 
-        if (this.firstDraw) {
             this.firstDraw = false;
+        } else {
+
+            this.world.iterateActiveChunks(chunk =>
+                chunk.iterateDirtyParticles(this.handleParticle.bind(this))
+            );
         }
 
         this.imageData.applyImageData(this.ctx);
+    }
+
+    private handleParticle(particle: Particle, coordinate: WorldCoordinate): void {
+        if (particle.ephemeral) {
+            this.clearGridElement(coordinate);
+        } else if (particle.colorTuple) {
+            this.fillGridElement(coordinate, particle.colorTuple);
+        }
+    }
+
+    private clear(): void {
+        this.ctx.clearRect(0, 0, this.width, this.height);
     }
 
     private clearGridElement({x, y}: Coordinate): void {

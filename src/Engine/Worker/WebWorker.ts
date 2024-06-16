@@ -31,38 +31,7 @@ handler.on('init', (browserConfig) => {
 
     simulator = new Simulator(world, ObviousNonsenseBehaviourManager);
 
-    const centerX = Math.round(config.world.width / 2);
-    const centerOffset: number = config.debug?.fillerOffset ?? 0;
-    let fillerLimit: number = config.debug?.fillerLimit ?? -1;
-    simulator.on('preUpdate', () => {
-        if (fillerLimit === 0) {
-            return;
-        }
-
-        for (let x = centerX - centerOffset; x < centerX + centerOffset; x++) {
-            if (fillerLimit !== 0 && x % 2 === 0) {
-                world.setParticle({x, y: 0} as WorldCoordinate, ParticleType.Sand);
-                fillerLimit--;
-            }
-        }
-    });
-
     fpsManager.setFPS(config.simulation.fps);
-
-    // if (config.simulation.imageDataMode === true) {
-    //     renderer = new ImageDataRenderer(ctx, world, config.simulation.particleSize, config.world.height, config.world.width);
-    // } else {
-    //     renderer = new CanvasRenderer(ctx, world, config.simulation.particleSize, config.world.height, config.world.width);
-    // }
-
-
-    // fpsManager.setFPS(config.simulation.fps);
-    // const offscreenCtx = offscreenCanvas.getContext('2d');
-    // if (!offscreenCtx) {
-    //     throw new Error('No ctx?');
-    // }
-    //
-    // ctx = offscreenCtx;
 
     handler.on('start', () => fpsManager.start());
     handler.on('stop', () => fpsManager.stop());
@@ -90,5 +59,28 @@ handler.on('init', (browserConfig) => {
 
     handler.emit('ready', undefined);
 
-    // fpsManager.start(); //TODO add to config?
+    if (config.simulation.startOnInit !== false) {
+        fpsManager.start();
+    }
+
+    const width = config.world.outerBounds?.width;
+    if (width === undefined) {
+        return;
+    }
+
+    const centerX = Math.round(width / 2);
+    const centerOffset: number = config.debug?.fillerOffset ?? 0;
+    let fillerLimit: number = config.debug?.fillerLimit ?? -1;
+    simulator.on('preUpdate', () => {
+        if (fillerLimit === 0) {
+            return;
+        }
+
+        for (let x = centerX - centerOffset; x < centerX + centerOffset; x++) {
+            if (fillerLimit !== 0 && x % 2 === 0) {
+                world.setParticle({x, y: 0} as WorldCoordinate, ParticleType.Sand);
+                fillerLimit--;
+            }
+        }
+    });
 });

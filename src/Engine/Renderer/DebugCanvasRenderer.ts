@@ -11,8 +11,12 @@ export class DebugCanvasRenderer implements Renderer {
     ) {
     }
 
+    resize(): void {
+        this.firstDraw = true;
+    }
+
     draw(): void {
-        if (this.firstDraw){
+        if (this.firstDraw) {
             this.firstDraw = false;
             return;
         }

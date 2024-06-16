@@ -140,12 +140,13 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
                 ||
                 (rises && (densityInDirection * Math.random() > density))
             ) {
-                this.moveParticle(coordinate, direction);
+                if (this.moveParticle(coordinate, direction)) {
+                    particle.dirty = true;
+                    particleInDirection.dirty = true;
+                    return true;
+                }
 
-                particle.dirty = true;
-                particleInDirection.dirty = true;
-
-                return true;
+                return false;
             }
         } else if (trySwap && !particleInDirection.hasBeenDisplaced) {
             if (
@@ -158,13 +159,14 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
                     targetCoordinate,
                     rises ? this.risingDisplacementDirections : this.fallingDisplacementDirections,
                 )) {
-                    this.moveParticle(coordinate, direction);
-
-                    particle.dirty = true;
-                    particleInDirection.dirty = true;
+                    if (this.moveParticle(coordinate, direction)) {
+                        particle.dirty = true;
+                        particleInDirection.dirty = true;
+                        return true;
+                    }
                 }
 
-                return true;
+                return false;
             }
         }
 
