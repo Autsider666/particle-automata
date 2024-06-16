@@ -1,29 +1,49 @@
 import {ColorTuple} from "./Color.ts";
-import {Coordinate} from "./Type/Dimensional.ts";
+import {BoundingBox} from "./Excalibur/BoundingBox.ts";
+import {Coordinate, WorldDimensions} from "./Type/Dimensional.ts";
 
 const BytesPerPixel: number = 4;
 
-export class ImageDataHelper {
-    private readonly imageData: ImageData;
+export class ImageDataHelper<C extends Coordinate = Coordinate> {
+    private imageData!: ImageData;
+    private gridBounds!: BoundingBox<C>;
+    private width!: number;
+    private height!: number;
 
     constructor(
-        private readonly width: number,
-        private readonly height: number,
+        dimensions: WorldDimensions,
+        private readonly particleSize: number,
     ) {
+        this.resize(dimensions);
+    }
+
+    resize({width, height}: WorldDimensions): void {
+        this.width = width * this.particleSize;
+        this.height = height * this.particleSize;
+
         this.imageData = new ImageData(this.width, this.height);
+
         for (let i = 0; i < this.imageData.data.length; i += BytesPerPixel) {
             this.imageData.data[i + 3] = 255;
         }
+
+        this.gridBounds = BoundingBox.fromDimension<C>(width-1, height-1);
     }
 
     public applyImageData(ctx: CanvasImageData): void {
         ctx.putImageData(this.imageData, 0, 0);
     }
 
-    public fillRectangle({x:x1, y:y1}: Coordinate, width: number, height: number, color: ColorTuple) {
-        for (let y = y1; y < y1 + height; y++) {
-            for (let x = x1; x < x1 + width; x++) {
-                this.fillPixel({x: x, y: y}, color);
+    public fillRectangle(coordinate: C, width: number, height: number, color: ColorTuple): void { //TODO Cache rectangles?
+        if (!this.gridBounds.containsCoordinate(coordinate)) {
+            return;
+        }
+
+        const dX = coordinate.x * this.particleSize;
+        const dY = coordinate.y * this.particleSize;
+        for (let y = dY; y < dY + height; y++) {
+            for (let x = dX; x < dX + width; x++) {
+                this.fillPixel({x, y}, color);
             }
         }
     }

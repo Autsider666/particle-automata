@@ -1,5 +1,5 @@
 import {EventKey, EventMap} from "../../Utility/Excalibur/EventHandler.ts";
-import {Coordinate, Dimensions} from "../../Utility/Type/Dimensional.ts";
+import {Coordinate, WorldDimensions} from "../../Utility/Type/Dimensional.ts";
 import {Config} from "./Config.ts";
 import {RenderMode} from "./RenderMode.ts";
 
@@ -15,7 +15,7 @@ export type WorkerMessage = {
     },
     start: undefined,
     stop: undefined,
-    resize: Dimensions,
+    resize: WorldDimensions,
     create: Coordinate,
 }
 

@@ -13,6 +13,7 @@ import {SimpleWorldBuilder} from "./Engine/World/SimpleWorldBuilder.ts";
 import {EventHandler} from "./Utility/Excalibur/EventHandler.ts";
 import {FrameRateManager} from "./Utility/FrameRateManager.ts";
 import Stats from "./Utility/Stats/Stats.ts";
+import {Traversal} from "./Utility/Type/Dimensional.ts";
 import {URLParams} from "./Utility/URLParams.ts";
 
 // const canvas = document.querySelector('canvas');
@@ -54,20 +55,23 @@ if (debugMode) {
     renderModes.push(RenderMode.Debug);
 }
 
-
+const particleSize = URLParams.get('particleSize', "number") ?? 3;
 const config: Config = {
     world: {
-        outerBounds: {
-            width: URLParams.get('width', "number") ?? window.innerWidth,
-            height: URLParams.get('height', "number") ?? window.innerHeight,
-        }
+        outerBounds: Traversal.getGridDimensions(
+            {
+                width: URLParams.get('width', "number") ?? window.innerWidth,
+                height: URLParams.get('height', "number") ?? window.innerHeight,
+            },
+            particleSize
+        )
     },
     chunks: {
         size: URLParams.get('chunkSize', "number") ?? 10,
     },
     simulation: {
         fps: URLParams.get('fps', "number") ?? 40,
-        particleSize: URLParams.get('particleSize', "number") ?? 3,
+        particleSize,
         startOnInit: autoStartMode,
     },
     worker: {
@@ -97,10 +101,13 @@ document.body.addEventListener('keypress', ({code}) => {
     hasStarted = !hasStarted;
 });
 
-window.addEventListener('resize', () => events.emit('resize', {
-    width: window.innerWidth,
-    height: window.innerHeight,
-}));
+window.addEventListener('resize', () => events.emit('resize', Traversal.getGridDimensions(
+    {
+        width: URLParams.get('width', "number") ?? window.innerWidth,
+        height: URLParams.get('height', "number") ?? window.innerHeight,
+    },
+    config.simulation.particleSize,
+)));
 
 if (workerMode) {
     const workerManager = new WorkerManager(
@@ -143,7 +150,13 @@ if (workerMode) {
         }
 
         renderers.push(RendererBuilder.build(renderMode, {
-            ctx, world, config, dimensions: {width: window.innerWidth, height: window.innerHeight}
+            ctx, world, config, dimensions: Traversal.getGridDimensions(
+                {
+                    width: URLParams.get('width', "number") ?? window.innerWidth,
+                    height: URLParams.get('height', "number") ?? window.innerHeight,
+                },
+                particleSize
+            )
         }));
     }
 

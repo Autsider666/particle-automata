@@ -1,39 +1,27 @@
 import {ColorTuple} from "../../Utility/Color.ts";
 import {ImageDataHelper} from "../../Utility/ImageDataHelper.ts";
-import {Coordinate, Dimensions} from "../../Utility/Type/Dimensional.ts";
-import {World, WorldCoordinate} from "../Grid/World.ts";
+import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
+import {WorldCoordinate} from "../Grid/World.ts";
 import {Particle} from "../Particle/Particle.ts";
-import {Renderer} from "./Renderer.ts";
+import {Renderer, RendererProps} from "./Renderer.ts";
 
+export class ImageDataRenderer extends Renderer {
+    private imageData: ImageDataHelper<WorldCoordinate>;
 
-export class ImageDataRenderer implements Renderer {
-    private imageData: ImageDataHelper;
-    private firstDraw: boolean = true;
-
-    constructor(
-        private readonly ctx: CanvasImageData & CanvasRect,
-        private readonly world: World,
-        private readonly particleSize: number,
-        private height: number,
-        private width: number,
-    ) {
+    constructor(props: RendererProps) {
+        super(props);
         this.imageData = new ImageDataHelper(
-            width,
-            height,
+            props.dimensions,
+            this.particleSize,
         );
     }
 
-    resize({height, width}: Dimensions): void {
+    resize(dimensions: WorldDimensions): void {
         this.clear();
-        this.firstDraw = true;
-        this.height = height;
-        this.width = width;
+        super.resize(dimensions);
         this.clear();
 
-        this.imageData = new ImageDataHelper(
-            width,
-            height,
-        );
+        this.imageData.resize(dimensions);
     }
 
     draw(): void {
@@ -62,27 +50,21 @@ export class ImageDataRenderer implements Renderer {
     }
 
     private clear(): void {
-        this.ctx.clearRect(0, 0, this.width, this.height);
+        this.ctx.clearRect(0, 0, this.width * this.particleSize, this.height * this.particleSize);
     }
 
-    private clearGridElement({x, y}: Coordinate): void {
+    private clearGridElement(coordinate: WorldCoordinate): void {
         this.imageData.fillRectangle(
-            {
-                x: x * this.particleSize,
-                y: y * this.particleSize
-            },
+            coordinate,
             this.particleSize,
             this.particleSize,
-            [0, 0, 0, 0],
+            [0, 0, 0, 255],
         );
     }
 
-    private fillGridElement({x, y}: Coordinate, color: ColorTuple) {
+    private fillGridElement(coordinate: WorldCoordinate, color: ColorTuple) {
         this.imageData.fillRectangle(
-            {
-                x: x * this.particleSize,
-                y: y * this.particleSize
-            },
+            coordinate,
             this.particleSize,
             this.particleSize,
             color,

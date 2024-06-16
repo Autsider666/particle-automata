@@ -1,9 +1,8 @@
+import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
+
 export type Config = {
     world: {
-        outerBounds?: {
-            width: number,
-            height: number,
-        }
+        outerBounds: WorldDimensions
     },
     chunks: {
         size: number,

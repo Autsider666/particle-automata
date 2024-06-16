@@ -1,26 +1,14 @@
-import {Dimensions} from "../../Utility/Type/Dimensional.ts";
-import {World, WorldCoordinate} from "../Grid/World.ts";
+import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
+import {WorldCoordinate} from "../Grid/World.ts";
 import {Particle} from "../Particle/Particle.ts";
 import {Renderer} from "./Renderer.ts";
 
 
-export class CanvasRenderer implements Renderer {
-    protected firstDraw: boolean = true;
+export class CanvasRenderer extends Renderer {
 
-    constructor(
-        protected readonly ctx: CanvasRect & CanvasFillStrokeStyles,
-        protected readonly world: World,
-        protected readonly particleSize: number,
-        protected height: number,
-        protected width: number,
-    ) {
-    }
-
-    resize({height, width}: Dimensions): void {
+    resize(dimensions: WorldDimensions): void {
         this.clear();
-        this.firstDraw = true;
-        this.height = height;
-        this.width = width;
+        super.resize(dimensions);
         this.clear();
     }
 

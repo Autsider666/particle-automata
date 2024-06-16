@@ -1,28 +1,14 @@
-import {World} from "../Grid/World.ts";
 import {Renderer} from "./Renderer.ts";
 
-export class DebugCanvasRenderer implements Renderer {
-    private firstDraw: boolean = true;
-
-    constructor(
-        private readonly ctx: CanvasRect & CanvasFillStrokeStyles & CanvasPathDrawingStyles,
-        private readonly world: World,
-        private readonly particleSize: number,
-    ) {
-    }
-
-    resize(): void {
-        this.firstDraw = true;
-    }
-
+export class DebugCanvasRenderer extends Renderer {
     draw(): void {
         if (this.firstDraw) {
             this.firstDraw = false;
             return;
         }
 
+        this.ctx.lineWidth = 1;
         this.world.iterateAllChunks((chunk) => {
-            this.ctx.lineWidth = 1;
             const halfStroke = this.ctx.lineWidth * 0.5;
             if (chunk.isActive()) {
                 this.ctx.strokeStyle = 'rgb(50,114,99)';
@@ -41,5 +27,13 @@ export class DebugCanvasRenderer implements Renderer {
                 );
             }
         });
+
+        this.ctx.strokeStyle = 'rgb(55,222,215)';
+        this.ctx.strokeRect(
+            0,
+            0,
+            this.width * this.particleSize,
+            this.height * this.particleSize,
+        );
     }
 }

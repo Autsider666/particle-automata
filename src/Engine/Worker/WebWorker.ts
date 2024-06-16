@@ -45,7 +45,8 @@ handler.on('init', (browserConfig) => {
         console.log('startRendering', mode);
 
         renderers[mode] = RendererBuilder.build(mode, {
-            config, world, ctx, dimensions: canvas
+            config, world, ctx,
+            dimensions: config.world.outerBounds,
         });
 
         fpsManager.draw();
