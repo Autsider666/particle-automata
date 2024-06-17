@@ -32,9 +32,6 @@ export abstract class BehaviourManager {
 
             if (particle.id === undefined) {
                 particle.id = particleId++;
-                // console.log({
-                //     particleId: particle.id, state: 'new', x: coordinate.x, y: coordinate.y, chunkId: this.chunk.id
-                // });
             } else if (duplicateCheck.has(particle.id)) {
                 return;
             }
@@ -45,22 +42,7 @@ export abstract class BehaviourManager {
             this.updateParticle(particle, coordinate);
 
             if (particle.dirty) {
-                // console.log({
-                //     particleId: particle.id,
-                //     state: 'update',
-                //     x: coordinate.x,
-                //     y: coordinate.y,
-                //     chunkId: this.chunk.id
-                // });
                 this.wakeChunk(coordinate);
-            } else if (particle.id + 1 !== particleId) {
-                // console.log({
-                //     particleId: particle.id,
-                //     state: 'stale',
-                //     x: coordinate.x,
-                //     y: coordinate.y,
-                //     chunkId: this.chunk.id
-                // });
             }
         });
     }

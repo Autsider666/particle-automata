@@ -1,7 +1,6 @@
 import {CanvasRenderer} from "./CanvasRenderer.ts";
 
 export class DebugCanvasRenderer extends CanvasRenderer {
-
     draw(): void {
         if (this.firstDraw) {
             this.firstDraw = false;

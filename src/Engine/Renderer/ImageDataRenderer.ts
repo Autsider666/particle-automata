@@ -1,17 +1,18 @@
 import {RGBATuple} from "../../Utility/Color.ts";
-import {ImageDataHelper} from "../../Utility/ImageDataHelper.ts";
+import {ImageDataHelper} from "../../Utility/Rendering/ImageDataHelper.ts";
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
 import {WorldCoordinate} from "../Grid/World.ts";
 import {Particle} from "../Particle/Particle.ts";
-import {Renderer, RendererProps} from "./Renderer.ts";
+import {Abstract2DContextRenderer} from "./Abstract2DContextRenderer.ts";
+import {RendererProps} from "./Renderer.ts";
 
-export class ImageDataRenderer extends Renderer {
+export class ImageDataRenderer extends Abstract2DContextRenderer {
     private imageData: ImageDataHelper<WorldCoordinate>;
 
     constructor(props: RendererProps) {
         super(props);
         this.imageData = new ImageDataHelper(
-            props.dimensions,
+            props.config.world.outerBounds,
             this.particleSize,
         );
     }
@@ -47,10 +48,6 @@ export class ImageDataRenderer extends Renderer {
         } else if (particle.colorTuple) {
             this.fillGridElement(coordinate, particle.colorTuple);
         }
-    }
-
-    private clear(): void {
-        this.ctx.clearRect(0, 0, this.width * this.particleSize, this.height * this.particleSize);
     }
 
     private clearGridElement(coordinate: WorldCoordinate): void {

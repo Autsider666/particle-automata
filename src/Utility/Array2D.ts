@@ -64,7 +64,6 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
         this.iterateSet.delete(this.getByIndex(index));
 
         this.setIndex(index, item);
-        this.iterateSet.add(item);
     }
 
     private setIndex(index: number, item: I): boolean {
@@ -72,24 +71,12 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
             return false;
         }
 
-        // //FIXME seems like it returns stuff here that's not supposed to be replaced
-        // const current = this.getIndex(index);
-        // if (current && current !== item) {
-        //     this.iterateSet.delete(current);
-        // } else {
-        //     console.log(current);
-        // }
-
         this.store[index] = item;
         this.iterateSet.add(item);
         this.changedIndexes.add(index);
 
         return true;
     }
-
-    // removeIndex(index: number): boolean {
-    //     return this.setIndex(index, this.defaultValue(index));
-    // }
 
     iterateItems<P extends I = I>(callback: (item: P, coordinate: C) => void): void {
         for (let x = 0; x < this.arrayWidth; x++) {
@@ -148,11 +135,6 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
             return;
         }
 
-        console.log({
-            coordinate,
-            offset: this.offset,
-
-        });
         throw new Error('Invalid coordinate');
     }
 }

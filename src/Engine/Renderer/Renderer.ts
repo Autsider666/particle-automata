@@ -1,32 +1,31 @@
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
 import {World} from "../Grid/World.ts";
+import {Config} from "../Type/Config.ts";
 
 export type RendererProps = {
-    ctx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D,
+    canvas: HTMLCanvasElement | OffscreenCanvas
     world: World,
-    particleSize: number,
-    dimensions: WorldDimensions,
+    config: Config,
 }
 
 export abstract class Renderer {
     protected firstDraw: boolean = true;
     protected height: number;
     protected width: number;
-    protected readonly ctx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
+    protected readonly canvas: HTMLCanvasElement | OffscreenCanvas;
     protected readonly world: World;
     protected readonly particleSize: number;
 
     constructor({
-                    ctx,
+                    canvas,
                     world,
-                    particleSize,
-                    dimensions,
+                    config,
                 }: RendererProps) {
-        this.ctx = ctx;
+        this.canvas = canvas;
         this.world = world;
-        this.particleSize = particleSize;
-        this.height = dimensions.height;
-        this.width = dimensions.width;
+        this.particleSize = config.simulation.particleSize;
+        this.height = config.world.outerBounds.height;
+        this.width = config.world.outerBounds.width;
     }
 
     abstract draw(): void;

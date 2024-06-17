@@ -32,12 +32,16 @@ const modes = URLParams.get('renderMode', "string") ?? URLParams.get('mode', "st
 for (const mode of modes.split(',')) {
     switch (mode) {
         case 'debug':
+        case 'draw':
+            renderModes.push(RenderMode.Draw);
+            break;
         case 'image':
         case 'imageData':
             renderModes.push(RenderMode.ImageData);
             break;
-        case 'draw':
-            renderModes.push(RenderMode.Draw);
+        case 'gl':
+        case 'webgl':
+            renderModes.push(RenderMode.WebGL);
             break;
     }
 
@@ -47,7 +51,7 @@ for (const mode of modes.split(',')) {
 }
 
 const debugMode: boolean = URLParams.get('debug', "boolean") ?? false;
-if (debugMode) {
+if (debugMode && !renderModes.includes(RenderMode.WebGL)) {
     renderModes.push(RenderMode.Debug);
 }
 
@@ -81,10 +85,6 @@ const config: Config = {
     }
 };
 
-if (!config.worker) {
-    throw new Error('no worker?');
-}
-
 
 const events = new EventHandler<WorkerMessage>();
 let hasStarted: boolean = autoStartMode;
@@ -105,6 +105,20 @@ window.addEventListener('resize', () => events.emit('resize', Traversal.getGridD
     config.simulation.particleSize,
 )));
 
+const getCanvasForMode = (renderMode: RenderMode): HTMLCanvasElement => {
+    let canvas = rootElement.querySelector<HTMLCanvasElement>(`canvas.${renderMode}`);
+    if (!canvas) {
+
+        canvas = document.createElement('canvas');
+        canvas.classList.add(renderMode);
+        rootElement.appendChild(canvas);
+    }
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    return canvas;
+};
+
 if (workerMode) {
     const workerManager = new WorkerManager(
         config,
@@ -112,17 +126,7 @@ if (workerMode) {
             console.log('Worker started!');
 
             for (const renderMode of renderModes) {
-                let canvas = rootElement.querySelector<HTMLCanvasElement>(`canvas.${renderMode}`);
-                if (!canvas) {
-
-                    canvas = document.createElement('canvas');
-                    canvas.classList.add(renderMode);
-                    rootElement.appendChild(canvas);
-                }
-
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                workerManager.startRendering(renderMode, canvas);
+                workerManager.startRendering(renderMode, getCanvasForMode(renderMode));
             }
         }
     );
@@ -135,29 +139,8 @@ if (workerMode) {
 
     const renderers: Renderer[] = [];
     for (const renderMode of renderModes) {
-        let canvas = rootElement.querySelector<HTMLCanvasElement>(`canvas.${renderMode}`);
-        if (!canvas) {
-            canvas = document.createElement('canvas');
-            canvas.classList.add(renderMode);
-            rootElement.appendChild(canvas);
-        }
-
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-            throw new Error('No ctx?');
-        }
-
         renderers.push(RendererBuilder.build(renderMode, {
-            ctx, world, config, dimensions: Traversal.getGridDimensions(
-                {
-                    width: URLParams.get('width', "number") ?? window.innerWidth,
-                    height: URLParams.get('height', "number") ?? window.innerHeight,
-                },
-                particleSize
-            )
+            world, config, canvas: getCanvasForMode(renderMode),
         }));
     }
 
@@ -208,5 +191,7 @@ if (workerMode) {
 
     events.on('start', () => fpsManager.start());
     events.on('stop', () => fpsManager.stop());
+
+    //TODO add world mass dirty here as well so all the clear logic can be removed out of renderer?
     events.on('resize', dimensions => renderers.forEach(renderer => renderer.resize(dimensions)));
 }

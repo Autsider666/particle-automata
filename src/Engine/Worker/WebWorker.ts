@@ -37,16 +37,10 @@ handler.on('init', (browserConfig) => {
     handler.on('stop', () => fpsManager.stop());
 
     handler.on('startRendering', ({mode, canvas}) => {
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-            throw new Error('Unable to get context from canvas');
-        }
-
         console.log('startRendering', mode);
 
         renderers[mode] = RendererBuilder.build(mode, {
-            config, world, ctx,
-            dimensions: config.world.outerBounds,
+            config, world, canvas,
         });
 
         fpsManager.draw();

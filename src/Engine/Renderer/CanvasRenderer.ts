@@ -1,11 +1,10 @@
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
 import {WorldCoordinate} from "../Grid/World.ts";
 import {Particle} from "../Particle/Particle.ts";
-import {Renderer} from "./Renderer.ts";
+import {Abstract2DContextRenderer} from "./Abstract2DContextRenderer.ts";
 
 
-export class CanvasRenderer extends Renderer {
-
+export class CanvasRenderer extends Abstract2DContextRenderer {
     resize(dimensions: WorldDimensions): void {
         this.clear();
         super.resize(dimensions);
@@ -33,9 +32,5 @@ export class CanvasRenderer extends Renderer {
         } else {
             this.ctx.clearRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
         }
-    }
-
-    protected clear(): void {
-        this.ctx.clearRect(0, 0, this.width * this.particleSize, this.height*this.particleSize);
     }
 }

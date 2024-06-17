@@ -122,10 +122,5 @@ export default class StatsPanel {
             this.pixelRatio,
             Math.round((1 - (value / maxValue)) * this.graphHeight),
         );
-
-
-        // if (this.name === 'MS') {
-        //     console.log(value, maxValue,Math.round((1 - (value / maxValue)) * this.graphHeight), this.graphHeight);
-        // }
     }
 }

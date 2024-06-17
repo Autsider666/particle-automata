@@ -101,9 +101,9 @@ export class Color {
     }
 
     private static HSLAtoRGBA([h, s, l, a]: HSLATuple): RGBATuple {
-        let r: number, g: number, b: number;
-        // console.log(h,s,l,a);
-
+        let r: number;
+        let g: number;
+        let b: number;
         if (s === 0) {
             r = g = b = l; // achromatic
         } else {
