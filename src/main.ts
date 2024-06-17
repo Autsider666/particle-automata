@@ -16,15 +16,10 @@ import Stats from "./Utility/Stats/Stats.ts";
 import {Traversal} from "./Utility/Type/Dimensional.ts";
 import {URLParams} from "./Utility/URLParams.ts";
 
-// const canvas = document.querySelector('canvas');
-// if (!canvas) {
-//     throw new Error('No canvas found');
-// }
-//
-// const ctx = canvas.getContext('2d');
-// if (!ctx) {
-//     throw new Error('No 2D context available');
-// }
+const rootElement = document.querySelector<HTMLDivElement>('#renderer');
+if (!rootElement) {
+    throw new Error('Could not find root element');
+}
 
 const workerMode: boolean = URLParams.get('worker', "boolean") ?? false;
 const autoStartMode: boolean = URLParams.get('autoStart', "boolean") ?? true;
@@ -116,9 +111,12 @@ if (workerMode) {
             console.log('Worker started!');
 
             for (const renderMode of renderModes) {
-                const canvas = document.querySelector<HTMLCanvasElement>(`canvas.${renderMode}`);
+                let canvas = rootElement.querySelector<HTMLCanvasElement>(`canvas.${renderMode}`);
                 if (!canvas) {
-                    throw new Error(`No canvas found on selector: "canvas.${renderMode}"`);
+
+                    canvas = document.createElement('canvas');
+                    canvas.classList.add(renderMode);
+                    rootElement.appendChild(canvas);
                 }
 
                 canvas.width = window.innerWidth;
@@ -136,9 +134,11 @@ if (workerMode) {
 
     const renderers: Renderer[] = [];
     for (const renderMode of renderModes) {
-        const canvas = document.querySelector<HTMLCanvasElement>(`canvas.${renderMode}`);
+        let canvas = rootElement.querySelector<HTMLCanvasElement>(`canvas.${renderMode}`);
         if (!canvas) {
-            throw new Error(`No canvas found on selector: "canvas.${renderMode}"`);
+            canvas = document.createElement('canvas');
+            canvas.classList.add(renderMode);
+            rootElement.appendChild(canvas);
         }
 
         canvas.width = window.innerWidth;

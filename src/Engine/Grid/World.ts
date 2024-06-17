@@ -10,7 +10,7 @@ export type WorldCoordinate = Distinct<Coordinate, 'World'>;
 
 export class World {
     private readonly chunks = new Map<string, Chunk | undefined>();
-    private readonly activeChunks = new Set<{ chunk: Chunk, coordinate: ChunkCoordinate }>();
+    private readonly activeChunks:{ chunk: Chunk, coordinate: ChunkCoordinate }[] = [];
 
     constructor(
         public readonly chunkSize: number,
@@ -149,10 +149,10 @@ export class World {
     }
 
     prepareForUpdate() {
-        this.activeChunks.clear();
+        this.activeChunks.length = 0;
         for (const [key, chunk] of this.chunks) {
             if (chunk?.isActive()) {
-                this.activeChunks.add({
+                this.activeChunks.unshift({
                     chunk,
                     coordinate: this.toCoordinate(key),
                 });

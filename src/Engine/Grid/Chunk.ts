@@ -1,6 +1,5 @@
 import {Array2D} from "../../Utility/Array2D.ts";
 import {BoundingBox} from "../../Utility/Excalibur/BoundingBox.ts";
-import {DirtyParticle} from "../Behaviour/BehaviourManager.ts";
 import type {Particle} from "../Particle/Particle";
 import {ParticleType} from "../Particle/ParticleType.ts";
 import {WorldCoordinate} from "./World.ts";
@@ -17,7 +16,6 @@ export class Chunk {
     public readonly id: number = chunkId++;
 
     private readonly particles: Array2D<Particle, WorldCoordinate>; //TODO check if Set is faster
-    private readonly activeParticles = new Set<{ particle: Particle, coordinate: WorldCoordinate }>();
 
     private shouldUpdate: boolean = true;
     private shouldUpdateNextTime: boolean = false;
@@ -30,9 +28,13 @@ export class Chunk {
     }
 
     public iterateDirtyParticles<P extends Particle = Particle>(callback: (particle: P, coordinate: WorldCoordinate) => void): void {
-        for (const {particle, coordinate} of this.activeParticles) {
+        // for (const {particle, coordinate} of this.activeParticles) {
+        //     callback(particle as P, coordinate);
+        // }
+
+        this.particles.iterateChanges((particle, coordinate)=> {
             callback(particle as P, coordinate);
-        }
+        });
     }
 
     public iterateAllParticles<P extends Particle = Particle>(callback: (particle: P, coordinate: WorldCoordinate) => void): void {
@@ -83,13 +85,6 @@ export class Chunk {
     public prepareForUpdate(): void {
         this.shouldUpdate = this.shouldUpdateNextTime;
         this.shouldUpdateNextTime = false;
-
-        this.activeParticles.clear();
-        this.iterateAllParticles<DirtyParticle>((particle, coordinate) => {
-            if (particle.dirty !== false) {
-                this.activeParticles.add({particle, coordinate});
-            }
-        });
     }
 
     public isActive(): boolean {

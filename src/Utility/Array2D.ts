@@ -100,10 +100,12 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
         }
     }
 
-    iterateChanges(callback: (item: I) => void): void {
+    iterateChanges(callback: (item: I, coordinate: C) => void): void {
         for (const index of this.changedIndexes) {
-            callback(this.getByIndex(index));
+            callback(this.getByIndex(index), this.toCoordinate(index));
         }
+
+        this.changedIndexes.clear();
     }
 
     // private toCoordinate(index: number): C {
@@ -127,6 +129,12 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
 
     private toIndex({x, y}: Readonly<C>): number {
         return (y - this.offset.y) * this.arrayWidth + (x - this.offset.x);
+    }
+
+    private toCoordinate(index: number): C {
+        const x = index % this.arrayWidth;
+        const y = (index - x) / this.arrayWidth;
+        return {x: x + this.offset.x, y: y + this.offset.y} as C;
     }
 
     private isValidIndex(index: number): boolean {
