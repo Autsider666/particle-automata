@@ -2,13 +2,7 @@ import {Array2D} from "../../Utility/Array2D.ts";
 import {BoundingBox} from "../../Utility/Excalibur/BoundingBox.ts";
 import type {Particle} from "../Particle/Particle";
 import {ParticleType} from "../Particle/ParticleType.ts";
-import {WorldCoordinate} from "./World.ts";
-
-// type Change = {
-//     source: Chunk,
-//     origin: WorldCoordinate,
-//     target: WorldCoordinate,
-// }
+import {WorldCoordinate} from "../Type/Coordinate.ts";
 
 let chunkId: number = 0;
 

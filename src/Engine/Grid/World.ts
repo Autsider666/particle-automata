@@ -2,13 +2,10 @@ import {createSnackbar} from "@snackbar/core";
 import {BoundingBox} from "../../Utility/Excalibur/BoundingBox.ts";
 import {onWorker} from "../../Utility/OnWorker.ts";
 import type {Direction} from "../../Utility/Type/Dimensional.ts";
-import {Coordinate, Traversal} from "../../Utility/Type/Dimensional.ts";
-import {Distinct} from "../../Utility/Type/Distinct.ts";
+import {Traversal} from "../../Utility/Type/Dimensional.ts";
 import {Particle} from "../Particle/Particle.ts";
+import {ChunkCoordinate, WorldCoordinate} from "../Type/Coordinate.ts";
 import {Chunk} from "./Chunk.ts";
-
-export type ChunkCoordinate = Distinct<Coordinate, 'Chunk'>;
-export type WorldCoordinate = Distinct<Coordinate, 'World'>;
 
 export class World {
     private readonly chunks = new Map<string, Chunk | undefined>();

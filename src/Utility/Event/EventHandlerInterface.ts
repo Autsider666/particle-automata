@@ -1,4 +1,4 @@
-import {EventMap} from "../Excalibur/EventHandler.ts";
+import {EventMap} from "./Type.ts";
 import {EventEmitterInterface} from "./EventEmitterInterface.ts";
 import {EventListenerInterface} from "./EventListenerInterface.ts";
 

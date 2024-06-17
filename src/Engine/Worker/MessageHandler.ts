@@ -1,6 +1,7 @@
 import {EventEmitterInterface} from "../../Utility/Event/EventEmitterInterface.ts";
 import {EventHandlerInterface} from "../../Utility/Event/EventHandlerInterface.ts";
-import {EventHandler, EventKey, EventMap, Handler} from "../../Utility/Excalibur/EventHandler.ts";
+import {EventKey, EventMap, Handler} from "../../Utility/Event/Type.ts";
+import {EventHandler} from "../../Utility/Excalibur/EventHandler.ts";
 import {onWorker} from "../../Utility/OnWorker.ts";
 import {MessageFormat, MessageIdentifier} from "../Type/WorkerMessage.ts";
 

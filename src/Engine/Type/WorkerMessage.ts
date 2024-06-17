@@ -1,4 +1,4 @@
-import {EventKey, EventMap} from "../../Utility/Excalibur/EventHandler.ts";
+import {EventKey, EventMap} from "../../Utility/Event/Type.ts";
 import {Coordinate, WorldDimensions} from "../../Utility/Type/Dimensional.ts";
 import {Config} from "./Config.ts";
 import {RenderMode} from "./RenderMode.ts";

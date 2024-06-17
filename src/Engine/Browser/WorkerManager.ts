@@ -1,5 +1,5 @@
 import {EventEmitterInterface} from "../../Utility/Event/EventEmitterInterface.ts";
-import {EventKey} from "../../Utility/Excalibur/EventHandler.ts";
+import {EventKey} from "../../Utility/Event/Type.ts";
 import {Config} from "../Type/Config.ts";
 import {RenderMode} from "../Type/RenderMode.ts";
 import {WorkerMessage} from "../Type/WorkerMessage.ts";

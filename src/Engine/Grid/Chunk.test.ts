@@ -1,8 +1,8 @@
 import {expect, test} from 'vitest';
 import {BoundingBox} from "../../Utility/Excalibur/BoundingBox.ts";
 import {ParticleType} from "../Particle/ParticleType.ts";
+import {WorldCoordinate} from "../Type/Coordinate.ts";
 import {Chunk} from './Chunk.ts';
-import {WorldCoordinate} from "./World.ts";
 
 const testBounds = BoundingBox.fromDimension(10, 5);
 

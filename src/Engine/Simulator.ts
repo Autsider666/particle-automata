@@ -1,5 +1,6 @@
 import {EventListenerInterface} from "../Utility/Event/EventListenerInterface.ts";
-import {EventHandler, EventKey, Handler} from "../Utility/Excalibur/EventHandler.ts";
+import {EventKey, Handler} from "../Utility/Event/Type.ts";
+import {EventHandler} from "../Utility/Excalibur/EventHandler.ts";
 import {Constructor} from "../Utility/Type/Constructor.ts";
 import {BehaviourManager} from "./Behaviour/BehaviourManager.ts";
 import {Chunk} from "./Grid/Chunk.ts";

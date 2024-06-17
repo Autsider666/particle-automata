@@ -1,6 +1,6 @@
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
-import {WorldCoordinate} from "../Grid/World.ts";
 import {Particle} from "../Particle/Particle.ts";
+import {WorldCoordinate} from "../Type/Coordinate.ts";
 import {Abstract2DContextRenderer} from "./Abstract2DContextRenderer.ts";
 
 

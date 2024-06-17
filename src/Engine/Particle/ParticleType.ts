@@ -1,4 +1,4 @@
-import {Color, ColorVariance, RGBATuple} from "../../Utility/Color.ts";
+import {Color, ColorVariance, HexColor, RGBATuple} from "../../Utility/Color.ts";
 
 const genericColorVariance: ColorVariance = {
     hue: {value: 0},
@@ -26,8 +26,6 @@ export interface ParticleTypeData {
     ephemeral?: boolean,
     immovable?: boolean,
 }
-
-export type HexColor = `#${string}`;
 
 type ParticleTypeMap = {
     // Air: ElementData,

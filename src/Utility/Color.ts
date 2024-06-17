@@ -12,6 +12,8 @@ export type ColorVariance = {
 export type RGBATuple = [number, number, number, number];
 export type HSLATuple = [number, number, number, number];
 
+export type HexColor = `#${string}`;
+
 const random = new Random(); //FIXME dirty dirty
 
 export class Color {

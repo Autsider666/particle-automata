@@ -2,8 +2,8 @@ import * as twgl from "twgl.js";
 import {RGBATuple} from "../../Utility/Color.ts";
 import {PixelDataHelper} from "../../Utility/Rendering/PixelDataHelper.ts";
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
-import {WorldCoordinate} from "../Grid/World.ts";
 import {Particle} from "../Particle/Particle.ts";
+import {WorldCoordinate} from "../Type/Coordinate.ts";
 import {Renderer, RendererProps} from "./Renderer.ts";
 
 const vertexShader = `
