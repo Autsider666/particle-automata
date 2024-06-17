@@ -104,7 +104,9 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
         for (const index of this.changedIndexes) {
             callback(this.getByIndex(index), this.toCoordinate(index));
         }
+    }
 
+    resetChanges():void {
         this.changedIndexes.clear();
     }
 

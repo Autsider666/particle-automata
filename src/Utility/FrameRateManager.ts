@@ -45,7 +45,7 @@ export class FrameRateManager {
         this.interval = 1000.0 / fps;
     }
 
-    private step(): void {
+    private step(): void { //FIXME https://stackoverflow.com/a/34151659
         requestAnimationFrame(this.step.bind(this));
         if (this.interval === 0 || this.paused) {
             return;

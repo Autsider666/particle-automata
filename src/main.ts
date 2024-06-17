@@ -1,4 +1,5 @@
 import './style.css';
+import '@snackbar/core/dist/snackbar.css';
 import {ObviousNonsenseBehaviourManager} from "./Engine/Behaviour/ObviousNonsenseBehaviourManager.ts";
 import {WorkerManager} from "./Engine/Browser/WorkerManager.ts";
 import {WorldCoordinate} from "./Engine/Grid/World.ts";
@@ -55,7 +56,7 @@ const config: Config = {
     world: {
         outerBounds: Traversal.getGridDimensions(
             {
-                width: URLParams.get('width', "number") ?? window.innerWidth,
+                width: URLParams.get('width', "number") ?? window.outerWidth,
                 height: URLParams.get('height', "number") ?? window.innerHeight,
             },
             particleSize

@@ -28,10 +28,6 @@ export class Chunk {
     }
 
     public iterateDirtyParticles<P extends Particle = Particle>(callback: (particle: P, coordinate: WorldCoordinate) => void): void {
-        // for (const {particle, coordinate} of this.activeParticles) {
-        //     callback(particle as P, coordinate);
-        // }
-
         this.particles.iterateChanges((particle, coordinate)=> {
             callback(particle as P, coordinate);
         });
@@ -85,6 +81,7 @@ export class Chunk {
     public prepareForUpdate(): void {
         this.shouldUpdate = this.shouldUpdateNextTime;
         this.shouldUpdateNextTime = false;
+        this.particles.resetChanges();
     }
 
     public isActive(): boolean {

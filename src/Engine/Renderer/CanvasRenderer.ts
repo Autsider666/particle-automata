@@ -35,7 +35,7 @@ export class CanvasRenderer extends Renderer {
         }
     }
 
-    private clear(): void {
-        this.ctx.clearRect(0, 0, this.width, this.height);
+    protected clear(): void {
+        this.ctx.clearRect(0, 0, this.width * this.particleSize, this.height*this.particleSize);
     }
 }

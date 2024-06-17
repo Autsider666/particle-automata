@@ -1,4 +1,6 @@
+import {createSnackbar} from "@snackbar/core";
 import {BoundingBox} from "../../Utility/Excalibur/BoundingBox.ts";
+import {onWorker} from "../../Utility/OnWorker.ts";
 import type {Direction} from "../../Utility/Type/Dimensional.ts";
 import {Coordinate, Traversal} from "../../Utility/Type/Dimensional.ts";
 import {Distinct} from "../../Utility/Type/Distinct.ts";
@@ -17,6 +19,18 @@ export class World {
         private readonly outerBounds?: BoundingBox,
         // private readonly removeOutsideBounds: boolean = true, //TODO add as option
     ) {
+        if(outerBounds && !onWorker()) {
+            const message = document.createElement('div');
+            message.innerHTML = `<strong>World</strong> <br/> 
+<strong>Size: </strong> <i>${outerBounds.width} x ${outerBounds.height}</i> </br>
+<strong>Max particles: </strong><i>${
+                (outerBounds.width*outerBounds.height).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+            }</i>`;
+            createSnackbar(message,{
+                timeout: 0,
+                position: 'right'
+            });
+        }
     }
 
     get totalChunks(): number {

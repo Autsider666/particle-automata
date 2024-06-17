@@ -1,9 +1,11 @@
-import {Renderer} from "./Renderer.ts";
+import {CanvasRenderer} from "./CanvasRenderer.ts";
 
-export class DebugCanvasRenderer extends Renderer {
+export class DebugCanvasRenderer extends CanvasRenderer {
+
     draw(): void {
         if (this.firstDraw) {
             this.firstDraw = false;
+            this.clear();
             return;
         }
 
