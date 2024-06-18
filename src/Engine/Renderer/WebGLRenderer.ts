@@ -2,10 +2,10 @@ import * as twgl from "twgl.js";
 import {RGBATuple} from "../../Utility/Color.ts";
 import {PixelDataHelper} from "../../Utility/Rendering/PixelDataHelper.ts";
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
-import {World} from "../Grid/World.ts";
-import {Particle} from "../Particle/Particle.ts";
 import {WorldCoordinate} from "../Type/Coordinate.ts";
 import {Renderer, RendererProps} from "./Renderer.ts";
+import {RendererParticle} from "./Type/RendererParticle.ts";
+import {RendererWorld} from "./Type/RendererWorld.ts";
 
 const vertexShader = `
     precision mediump float;
@@ -40,13 +40,13 @@ export class WebGLRenderer extends Renderer {
 
     constructor(props: RendererProps) {
         super(props);
-        const {config,canvas} = props;
+        const {config, canvas} = props;
         this.pixels = new PixelDataHelper(
             config.initialScreenBounds,
             this.particleSize,
         );
 
-        const glContext = canvas.getContext('webgl',{
+        const glContext = canvas.getContext('webgl', {
             alpha: false,
             antialias: false,
             depth: false,
@@ -94,14 +94,13 @@ export class WebGLRenderer extends Renderer {
         });
     }
 
-    draw(world: World): void {
-        if(this.firstDraw){
-            world.iterateAllParticles(this.handleParticle.bind(this));
+    draw({dirtyParticles}: RendererWorld): void {
+        if (this.firstDraw) {
             this.firstDraw = false; // TODO generalize this away?
-        } else {
-            world.iterateActiveChunks(chunk =>
-                chunk.iterateDirtyParticles(this.handleParticle.bind(this))
-            );
+        }
+
+        for (const [coordinate, particle] of dirtyParticles) {
+            this.handleParticle(coordinate, particle);
         }
 
         // Update texture
@@ -130,11 +129,11 @@ export class WebGLRenderer extends Renderer {
         });
     }
 
-    private handleParticle(particle: Particle, coordinate: WorldCoordinate): void {
+    private handleParticle(coordinate: WorldCoordinate, particle: RendererParticle): void {
         if (particle.ephemeral) {
             this.clearGridElement(coordinate);
-        } else if (particle.colorTuple) {
-            this.fillGridElement(coordinate, particle.colorTuple);
+        } else {
+            this.fillGridElement(coordinate, particle.color.tuple);
         }
     }
 

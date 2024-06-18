@@ -2,23 +2,26 @@ import * as Comlink from "comlink";
 import {BaseEventHandler} from "../Utility/Excalibur/BaseEventHandler.ts";
 import {FrameRateManager} from "../Utility/FrameRateManager.ts";
 import Stats from "../Utility/Stats/Stats.ts";
+import {WorldDimensions} from "../Utility/Type/Dimensional.ts";
 import {EngineConfig} from "./Config/EngineConfig.ts";
-import {World} from "./Grid/World.ts";
 import {Renderer} from "./Renderer/Renderer.ts";
 import {RendererBuilder} from "./Renderer/RendererBuilder.ts";
+import {RendererChunk} from "./Renderer/Type/RendererChunk.ts";
+import {RendererParticle} from "./Renderer/Type/RendererParticle.ts";
+import {RendererWorld} from "./Renderer/Type/RendererWorld.ts";
 import {WebWorkerSimulation} from "./Simulation/WebWorkerSimulation.ts";
 import Worker from "./Simulation/WebWorkerSimulation.ts?worker";
+import {ChunkCoordinate, WorldCoordinate} from "./Type/Coordinate.ts";
 import {WorkerMessage} from "./Type/WorkerMessage.ts";
-import {SimpleWorldBuilder} from "./World/SimpleWorldBuilder.ts";
 
-export class Engine extends BaseEventHandler<WorkerMessage>{
+export class Engine extends BaseEventHandler<WorkerMessage> {
     private isInitialized: boolean = false;
 
-    private simulation: WebWorkerSimulation;
-    private readonly world: World;
+    private simulation!: WebWorkerSimulation;
     private fpsManager: FrameRateManager;
     private readonly renderers: Renderer[] = [];
     private readonly stats?: Stats;
+    private readonly world: RendererWorld;
 
     constructor(
         private readonly rootElement: HTMLElement,
@@ -26,16 +29,12 @@ export class Engine extends BaseEventHandler<WorkerMessage>{
     ) {
         super();
 
-        if (this.config.useWorker) {
-            const Simulation = Comlink.wrap<WebWorkerSimulation>(new Worker());
-
-            // @ts-expect-error Does not believe Simulation has a constructor.
-            this.simulation = new Simulation(this.config.simulation);
-        } else {
-            this.simulation = new WebWorkerSimulation(this.config.simulation);
-        }
-
-        this.world = new SimpleWorldBuilder().build(config.simulation);
+        this.world = {
+            chunks: new Map<ChunkCoordinate, RendererChunk>(),
+            dirtyChunks: new Map<ChunkCoordinate, RendererChunk>(),
+            dirtyParticles: new Map<WorldCoordinate, RendererParticle>(),
+            particles: new Map<WorldCoordinate, RendererParticle>()
+        };
 
         for (const renderMode of this.config.renderer.modes) {
             this.renderers.push(RendererBuilder.build(renderMode, this.config.renderer, this.rootElement));
@@ -43,22 +42,14 @@ export class Engine extends BaseEventHandler<WorkerMessage>{
 
         this.fpsManager = new FrameRateManager(
             this.draw.bind(this),
-            this.config.simulation.fps,
+            60,
             !this.config.simulation.startOnInit,
         );
-
-        this.events.on('start', () => this.fpsManager.start());
-        this.events.on('stop', () => this.fpsManager.stop());
-
-        //TODO add world mass dirty here as well so all the clear logic can be removed out of renderer?
-        this.events.on('resize', dimensions => this.renderers.forEach(renderer => renderer.resize(dimensions)));
 
         if (config.showStats) {
             this.stats = new Stats({
                 width: 100,
                 height: 60,
-                // width: 80,
-                // height: 48,
                 showAll: true,
                 defaultPanels: {
                     MS: {
@@ -72,27 +63,38 @@ export class Engine extends BaseEventHandler<WorkerMessage>{
         }
     }
 
-    async start(): Promise<void> {
+    resize(dimensions: WorldDimensions): void {
+        for (const renderer of this.renderers) {
+            renderer.resize(dimensions);
+        }
+    }
+
+    start(): void {
         if (!this.isInitialized) {
-            await this.init();
+            throw new Error('Can\'t start before initializing');
         }
 
         this.fpsManager.start();
     }
 
-    async stop(): Promise<void> {
+    stop(): void {
         this.fpsManager.stop();
     }
 
-    private async init(): Promise<void> {
+    async init(): Promise<void> {
         if (this.isInitialized) {
             throw new Error('Already initialized');
         }
 
         if (this.config.useWorker) {
-            await (await this.simulation).setCallback(Comlink.proxy(this.handleSimulationOutput));
+            const Simulation = Comlink.wrap<WebWorkerSimulation>(new Worker());
+
+            // @ts-expect-error Does not believe Simulation has a constructor.
+            this.simulation = await new Simulation(this.config.simulation);
+            await this.simulation.setUpdateCallback(Comlink.proxy(this.handleSimulationUpdate.bind(this)));
         } else {
-            await this.simulation.setCallback(this.handleSimulationOutput);
+            this.simulation = new WebWorkerSimulation(this.config.simulation);
+            await this.simulation.setUpdateCallback(this.handleSimulationUpdate.bind(this));
         }
 
         await this.simulation.start();
@@ -113,7 +115,8 @@ export class Engine extends BaseEventHandler<WorkerMessage>{
         this.stats?.end();
     }
 
-    private handleSimulationOutput(): void {
-        // console.log('output');
+    private handleSimulationUpdate(): void {
+        this.world.dirtyParticles.clear();
+        this.world.dirtyChunks.clear();
     }
 }

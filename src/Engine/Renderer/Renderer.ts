@@ -1,6 +1,6 @@
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
 import {RendererConfig} from "../Config/RendererConfig.ts";
-import {World} from "../Grid/World.ts";
+import {RendererWorld} from "./Type/RendererWorld.ts";
 
 export type RendererProps = {
     canvas: HTMLCanvasElement | OffscreenCanvas
@@ -24,7 +24,7 @@ export abstract class Renderer {
         this.width = config.initialScreenBounds.width;
     }
 
-    abstract draw(world: World): void;
+    abstract draw(world: RendererWorld): void;
 
     resize({height, width}: WorldDimensions): void {
         this.firstDraw = true;

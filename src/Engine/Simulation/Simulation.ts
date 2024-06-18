@@ -1,18 +1,15 @@
-import {EventListenerInterface} from "../../Utility/Event/EventListenerInterface.ts";
 import {EventKey, Handler} from "../../Utility/Event/Type.ts";
 import {EventHandler} from "../../Utility/Excalibur/EventHandler.ts";
 import {Constructor} from "../../Utility/Type/Constructor.ts";
 import {BehaviourManager} from "../Behaviour/BehaviourManager.ts";
 import {Chunk} from "../Grid/Chunk.ts";
 import {World} from "../Grid/World.ts";
+import {SimulationEvent, SimulationInterface} from "./SimulationInterface.ts";
 
-export type SimulatorEvent = {
-    preUpdate: World,
-}
 
-export class Simulator implements EventListenerInterface<SimulatorEvent> {
+export class Simulation implements SimulationInterface {
     private readonly chunkManagers = new Map<Chunk, BehaviourManager>();
-    private readonly events = new EventHandler<SimulatorEvent>();
+    private readonly events = new EventHandler<SimulationEvent>();
 
     constructor(
         private readonly world: World,
@@ -33,11 +30,11 @@ export class Simulator implements EventListenerInterface<SimulatorEvent> {
         }
     }
 
-    on<TEventName extends EventKey<SimulatorEvent>>(eventName: TEventName, handler: Handler<SimulatorEvent[TEventName]>): void {
+    on<TEventName extends EventKey<SimulationEvent>>(eventName: TEventName, handler: Handler<SimulationEvent[TEventName]>): void {
         this.events.on(eventName, handler);
     }
 
-    off<TEventName extends EventKey<SimulatorEvent>>(eventName: TEventName, handler: Handler<SimulatorEvent[TEventName]>): void {
+    off<TEventName extends EventKey<SimulationEvent>>(eventName: TEventName, handler: Handler<SimulationEvent[TEventName]>): void {
         this.events.off(eventName, handler);
     }
 

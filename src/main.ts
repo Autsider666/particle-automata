@@ -14,7 +14,7 @@ const config = EngineConfigBuilder.generate();
 
 const engine = new Engine(rootElement, config);
 
-await engine.start();
+await engine.init();
 
 document.body.addEventListener('keypress', async ({code}) => {
     if (code !== 'Space') {
@@ -22,13 +22,13 @@ document.body.addEventListener('keypress', async ({code}) => {
     }
 
     if (await engine.isRunning()) {
-        engine.emit('stop', undefined);
+        engine.stop();
     } else {
-        engine.emit('stop', undefined);
+        engine.start();
     }
 });
 
-window.addEventListener('resize', () => engine.emit('resize', Traversal.getGridDimensions(
+window.addEventListener('resize', () => engine.resize(Traversal.getGridDimensions(
     {
         width: URLParams.get('width', "number") ?? window.innerWidth,
         height: URLParams.get('height', "number") ?? window.innerHeight,

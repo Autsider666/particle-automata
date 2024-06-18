@@ -1,8 +1,8 @@
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
-import {World} from "../Grid/World.ts";
-import {Particle} from "../Particle/Particle.ts";
 import {WorldCoordinate} from "../Type/Coordinate.ts";
 import {Abstract2DContextRenderer} from "./Abstract2DContextRenderer.ts";
+import {RendererParticle} from "./Type/RendererParticle.ts";
+import {RendererWorld} from "./Type/RendererWorld.ts";
 
 
 export class CanvasRenderer extends Abstract2DContextRenderer {
@@ -12,23 +12,19 @@ export class CanvasRenderer extends Abstract2DContextRenderer {
         this.clear();
     }
 
-    draw(world: World): void {
+    draw({dirtyParticles}:RendererWorld): void {
         if (this.firstDraw) {
-            this.clear();
-
-            world.iterateAllParticles(this.handleParticle.bind(this));
-
             this.firstDraw = false;
-        } else {
-            world.iterateActiveChunks((chunk) =>
-                chunk.iterateDirtyParticles(this.handleParticle.bind(this))
-            );
         }
+
+            for (const [coordinate, particle] of dirtyParticles) {
+                this.handleParticle(coordinate,particle);
+            }
     }
 
-    private handleParticle(particle: Particle, {x, y}: WorldCoordinate): void {
+    private handleParticle({x, y}: WorldCoordinate, particle: RendererParticle): void {
         if (!particle.ephemeral) {
-            this.ctx.fillStyle = particle.color;
+            this.ctx.fillStyle = particle.color.hex;
             this.ctx.fillRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);
         } else {
             this.ctx.clearRect(x * this.particleSize, y * this.particleSize, this.particleSize, this.particleSize);

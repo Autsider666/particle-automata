@@ -1,11 +1,11 @@
 import {RGBATuple} from "../../Utility/Color.ts";
 import {ImageDataHelper} from "../../Utility/Rendering/ImageDataHelper.ts";
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
-import {World} from "../Grid/World.ts";
-import {Particle} from "../Particle/Particle.ts";
 import {WorldCoordinate} from "../Type/Coordinate.ts";
 import {Abstract2DContextRenderer} from "./Abstract2DContextRenderer.ts";
 import {RendererProps} from "./Renderer.ts";
+import {RendererParticle} from "./Type/RendererParticle.ts";
+import {RendererWorld} from "./Type/RendererWorld.ts";
 
 export class ImageDataRenderer extends Abstract2DContextRenderer {
     private imageData: ImageDataHelper<WorldCoordinate>;
@@ -26,28 +26,23 @@ export class ImageDataRenderer extends Abstract2DContextRenderer {
         this.imageData.resize(dimensions);
     }
 
-    draw(world: World): void {
+    draw({dirtyParticles}: RendererWorld): void {
         if (this.firstDraw) {
-            this.clear();
-
-            world.iterateAllParticles(this.handleParticle.bind(this));
-
             this.firstDraw = false;
-        } else {
+        }
 
-            world.iterateActiveChunks(chunk =>
-                chunk.iterateDirtyParticles(this.handleParticle.bind(this))
-            );
+        for (const [coordinate, particle] of dirtyParticles) {
+            this.handleParticle(coordinate, particle);
         }
 
         this.imageData.applyImageData(this.ctx);
     }
 
-    private handleParticle(particle: Particle, coordinate: WorldCoordinate): void {
+    private handleParticle(coordinate: WorldCoordinate, particle: RendererParticle): void {
         if (particle.ephemeral) {
             this.clearGridElement(coordinate);
-        } else if (particle.colorTuple) {
-            this.fillGridElement(coordinate, particle.colorTuple);
+        } else {
+            this.fillGridElement(coordinate, particle.color.tuple);
         }
     }
 

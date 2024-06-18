@@ -9,21 +9,20 @@ import {Chunk} from "./Chunk.ts";
 
 export class World {
     private readonly chunks = new Map<string, Chunk | undefined>();
-    private readonly activeChunks:{ chunk: Chunk, coordinate: ChunkCoordinate }[] = [];
+    private readonly activeChunks: { chunk: Chunk, coordinate: ChunkCoordinate }[] = [];
 
     constructor(
         public readonly chunkSize: number,
         private readonly outerBounds?: BoundingBox,
-        // private readonly removeOutsideBounds: boolean = true, //TODO add as option
     ) {
-        if(outerBounds && !onWorker()) {
+        if (outerBounds && !onWorker()) {
             const message = document.createElement('div');
             message.innerHTML = `<strong>World</strong> <br/> 
 <strong>Size: </strong> <i>${outerBounds.width} x ${outerBounds.height}</i> </br>
 <strong>Max particles: </strong><i>${
-                (outerBounds.width*outerBounds.height).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                (outerBounds.width * outerBounds.height).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
             }</i>`;
-            createSnackbar(message,{
+            createSnackbar(message, {
                 timeout: 0,
                 position: 'right'
             });
