@@ -83,7 +83,12 @@ export class WebGLRenderer extends Renderer {
         this.bufferInfo = twgl.createBufferInfoFromArrays(this.gl, {
             position: {
                 numComponents: 2,
-                data: [0, 0, 0, 1, 1, 0, 1, 1], // Seems to determine the dimensions of the render field. Here it's a rectangle
+                data: [
+                    0, 0,
+                    0, 1,
+                    1, 0,
+                    1, 1,
+                ],
             },
         });
     }
@@ -101,7 +106,7 @@ export class WebGLRenderer extends Renderer {
         // Update texture
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
         this.gl.texSubImage2D(
-            this.gl.TEXTURE_2D, 0, 0, 0, this.width, this.height,//this.textureWidth, this.textureHeight,
+            this.gl.TEXTURE_2D, 0, 0, 0, this.width, this.height,
             this.gl.RGB, this.gl.UNSIGNED_BYTE, this.pixels.pixelData
         );
         // Render
@@ -116,8 +121,6 @@ export class WebGLRenderer extends Renderer {
             target: gl.TEXTURE_2D,
             width: this.width,
             height: this.height,
-            // width: this.textureWidth,
-            // height: this.textureHeight,
             minMag: gl.NEAREST,
             internalFormat: gl.RGB,
             format: gl.RGB,
