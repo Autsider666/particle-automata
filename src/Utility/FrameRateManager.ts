@@ -5,8 +5,7 @@ export class FrameRateManager {
     private interval: number;
 
     constructor(
-        private readonly updateCallback: () => void,
-        private readonly drawCallback: () => void,
+        private readonly callback: () => void,
         fps: number,
         private paused: boolean = false,
     ) {
@@ -21,12 +20,8 @@ export class FrameRateManager {
         this.step();
     }
 
-    public update(): void {
-        this.updateCallback();
-    }
-
-    public draw(): void {
-        this.drawCallback();
+    public runCallback(): void {
+        this.callback();
     }
 
     public start(): void {
@@ -35,6 +30,10 @@ export class FrameRateManager {
 
     public stop(): void {
         this.paused = true;
+    }
+
+    public isRunning():boolean {
+        return !this.paused;
     }
 
     public toggle(): void {
@@ -57,8 +56,7 @@ export class FrameRateManager {
         if (this.delta > this.interval) {
             this.then = this.now - (this.delta % this.interval);
 
-            this.update();
-            this.draw();
+            this.runCallback();
         }
     }
 }

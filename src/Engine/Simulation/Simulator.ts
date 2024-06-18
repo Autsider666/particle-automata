@@ -1,10 +1,10 @@
-import {EventListenerInterface} from "../Utility/Event/EventListenerInterface.ts";
-import {EventKey, Handler} from "../Utility/Event/Type.ts";
-import {EventHandler} from "../Utility/Excalibur/EventHandler.ts";
-import {Constructor} from "../Utility/Type/Constructor.ts";
-import {BehaviourManager} from "./Behaviour/BehaviourManager.ts";
-import {Chunk} from "./Grid/Chunk.ts";
-import {World} from "./Grid/World.ts";
+import {EventListenerInterface} from "../../Utility/Event/EventListenerInterface.ts";
+import {EventKey, Handler} from "../../Utility/Event/Type.ts";
+import {EventHandler} from "../../Utility/Excalibur/EventHandler.ts";
+import {Constructor} from "../../Utility/Type/Constructor.ts";
+import {BehaviourManager} from "../Behaviour/BehaviourManager.ts";
+import {Chunk} from "../Grid/Chunk.ts";
+import {World} from "../Grid/World.ts";
 
 export type SimulatorEvent = {
     preUpdate: World,
@@ -16,7 +16,7 @@ export class Simulator implements EventListenerInterface<SimulatorEvent> {
 
     constructor(
         private readonly world: World,
-        private readonly builder: Constructor<BehaviourManager>
+        private readonly managerConstructor: Constructor<BehaviourManager>
     ) {
     }
 
@@ -33,7 +33,6 @@ export class Simulator implements EventListenerInterface<SimulatorEvent> {
         }
     }
 
-
     on<TEventName extends EventKey<SimulatorEvent>>(eventName: TEventName, handler: Handler<SimulatorEvent[TEventName]>): void {
         this.events.on(eventName, handler);
     }
@@ -44,7 +43,7 @@ export class Simulator implements EventListenerInterface<SimulatorEvent> {
 
     private prepareForUpdate(chunk: Chunk): void {
         if (!this.chunkManagers.has(chunk)) {
-            this.chunkManagers.set(chunk, new this.builder(this.world, chunk));
+            this.chunkManagers.set(chunk, new this.managerConstructor(this.world, chunk));
         }
 
         chunk.prepareForUpdate();

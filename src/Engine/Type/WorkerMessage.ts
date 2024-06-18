@@ -1,6 +1,6 @@
 import {EventKey, EventMap} from "../../Utility/Event/Type.ts";
 import {Coordinate, WorldDimensions} from "../../Utility/Type/Dimensional.ts";
-import {EngineConfig} from "../EngineConfig.ts";
+import {EngineConfig} from "../Config/EngineConfig.ts";
 import {RenderMode} from "./RenderMode.ts";
 
 export type WorkerMessage = {

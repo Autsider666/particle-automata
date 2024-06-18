@@ -1,3 +1,4 @@
+import {RendererConfig} from "../Config/RendererConfig.ts";
 import {RenderMode} from "../Type/RenderMode.ts";
 import {CanvasRenderer} from "./CanvasRenderer.ts";
 import {DebugCanvasRenderer} from "./DebugCanvasRenderer.ts";
@@ -8,8 +9,14 @@ import {WebGLRenderer} from "./WebGLRenderer.ts";
 export class RendererBuilder {
     static build(
         mode: RenderMode,
-        props: RendererProps,
+        config: RendererConfig,
+        rootElement:HTMLElement,
     ): Renderer {
+        const props:RendererProps = {
+            canvas: this.getCanvasForMode(rootElement,mode),
+            config,
+        };
+
         switch (mode) {
             case RenderMode.Debug:
                 return new DebugCanvasRenderer(props);
@@ -21,4 +28,17 @@ export class RendererBuilder {
                 return new WebGLRenderer(props);
         }
     }
+
+    static getCanvasForMode = (rootElement: HTMLElement, renderMode: RenderMode): HTMLCanvasElement => {
+        let canvas = rootElement.querySelector<HTMLCanvasElement>(`canvas.${renderMode}`);
+        if (!canvas) {
+            canvas = document.createElement('canvas');
+            canvas.classList.add(renderMode);
+            rootElement.appendChild(canvas);
+        }
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        return canvas;
+    };
 }

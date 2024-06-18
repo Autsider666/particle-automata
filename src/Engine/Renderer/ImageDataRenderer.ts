@@ -1,6 +1,7 @@
 import {RGBATuple} from "../../Utility/Color.ts";
 import {ImageDataHelper} from "../../Utility/Rendering/ImageDataHelper.ts";
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
+import {World} from "../Grid/World.ts";
 import {Particle} from "../Particle/Particle.ts";
 import {WorldCoordinate} from "../Type/Coordinate.ts";
 import {Abstract2DContextRenderer} from "./Abstract2DContextRenderer.ts";
@@ -12,7 +13,7 @@ export class ImageDataRenderer extends Abstract2DContextRenderer {
     constructor(props: RendererProps) {
         super(props);
         this.imageData = new ImageDataHelper(
-            props.config.world.outerBounds,
+            props.config.initialScreenBounds,
             this.particleSize,
         );
     }
@@ -25,16 +26,16 @@ export class ImageDataRenderer extends Abstract2DContextRenderer {
         this.imageData.resize(dimensions);
     }
 
-    draw(): void {
+    draw(world: World): void {
         if (this.firstDraw) {
             this.clear();
 
-            this.world.iterateAllParticles(this.handleParticle.bind(this));
+            world.iterateAllParticles(this.handleParticle.bind(this));
 
             this.firstDraw = false;
         } else {
 
-            this.world.iterateActiveChunks(chunk =>
+            world.iterateActiveChunks(chunk =>
                 chunk.iterateDirtyParticles(this.handleParticle.bind(this))
             );
         }

@@ -1,32 +1,14 @@
-import {Traversal, WorldDimensions} from "../Utility/Type/Dimensional.ts";
-import {URLParams} from "../Utility/URLParams.ts";
-import {RenderMode} from "./Type/RenderMode.ts";
+import {Traversal} from "../../Utility/Type/Dimensional.ts";
+import {URLParams} from "../../Utility/URLParams.ts";
+import {RenderMode} from "../Type/RenderMode.ts";
+import {RendererConfig} from "./RendererConfig.ts";
+import {SimulationConfig} from "./SimulationConfig.ts";
 
 export type EngineConfig = {
-    world: {
-        outerBounds: WorldDimensions
-    },
-    chunks: {
-        size: number,
-    }
-    simulation: {
-        fps: number,
-        particleSize: number,
-        imageDataMode?: boolean,
-        startOnInit?: boolean,
-    },
-    renderer: {
-        modes: RenderMode[],
-    }
-    worker?: {
-        canvasIdentifier: string,
-    },
-    debug?: {
-        draw?: boolean,
-        stats?: boolean,
-        fillerOffset?: number,
-        fillerLimit?: number,
-    },
+    useWorker: boolean,
+    showStats: boolean,
+    simulation: SimulationConfig,
+    renderer: RendererConfig,
 };
 
 export class EngineConfigBuilder {
@@ -64,36 +46,31 @@ export class EngineConfigBuilder {
         }
 
         const particleSize = URLParams.get('particleSize', "number") ?? 5;
+
+        const outerBounds = Traversal.getGridDimensions(
+            {
+                width: URLParams.get('width', "number") ?? window.outerWidth,
+                height: URLParams.get('height', "number") ?? window.innerHeight,
+            },
+            particleSize
+        );
+
         return {
-            world: {
-                outerBounds: Traversal.getGridDimensions(
-                    {
-                        width: URLParams.get('width', "number") ?? window.outerWidth,
-                        height: URLParams.get('height', "number") ?? window.innerHeight,
-                    },
-                    particleSize
-                )
-            },
-            chunks: {
-                size: URLParams.get('chunkSize', "number") ?? 10,
-            },
+            useWorker: URLParams.get('worker', 'boolean') ?? true,
+            showStats: URLParams.get('stats', "boolean") ?? false,
             simulation: {
                 fps: URLParams.get('fps', "number") ?? 60,
-                particleSize,
                 startOnInit: autoStartMode,
+                outerBounds,
+                chunks: {
+                    size: URLParams.get('chunkSize', "number") ?? 10,
+                },
             },
             renderer: {
                 modes: renderModes,
+                initialScreenBounds: outerBounds,
+                particleSize,
             },
-            worker: {
-                canvasIdentifier: 'canvas#offscreen',
-            },
-            debug: {
-                draw: false,
-                stats: true,
-                fillerOffset: 5,
-                fillerLimit: -1,
-            }
         };
     }
 }

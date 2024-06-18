@@ -1,6 +1,6 @@
 import {EventEmitterInterface} from "../../Utility/Event/EventEmitterInterface.ts";
 import {EventKey} from "../../Utility/Event/Type.ts";
-import {EngineConfig} from "../EngineConfig.ts";
+import {EngineConfig} from "../Config/EngineConfig.ts";
 import {RenderMode} from "../Type/RenderMode.ts";
 import {WorkerMessage} from "../Type/WorkerMessage.ts";
 import {MessageHandler} from "../Worker/MessageHandler.ts";

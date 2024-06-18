@@ -1,12 +1,12 @@
 import {BoundingBox} from "../../Utility/Excalibur/BoundingBox.ts";
-import {EngineConfig} from "../EngineConfig.ts";
+import {SimulationConfig} from "../Config/SimulationConfig.ts";
 import {World} from "../Grid/World.ts";
 import {ParticleType} from "../Particle/ParticleType.ts";
 import {WorldBuilder} from "./WorldBuilder.ts";
 
 export class SimpleWorldBuilder implements WorldBuilder {
-    build(config: EngineConfig): World {
-        const bounds = config.world.outerBounds;
+    build(config: SimulationConfig): World {
+        const bounds = config.outerBounds;
         let outerBounds: BoundingBox | undefined;
         if (bounds) {
             outerBounds = BoundingBox.fromDimension(bounds.width, bounds.height);

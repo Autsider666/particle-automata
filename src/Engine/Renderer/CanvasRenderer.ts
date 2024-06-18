@@ -1,4 +1,5 @@
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
+import {World} from "../Grid/World.ts";
 import {Particle} from "../Particle/Particle.ts";
 import {WorldCoordinate} from "../Type/Coordinate.ts";
 import {Abstract2DContextRenderer} from "./Abstract2DContextRenderer.ts";
@@ -11,15 +12,15 @@ export class CanvasRenderer extends Abstract2DContextRenderer {
         this.clear();
     }
 
-    draw(): void {
+    draw(world: World): void {
         if (this.firstDraw) {
             this.clear();
 
-            this.world.iterateAllParticles(this.handleParticle.bind(this));
+            world.iterateAllParticles(this.handleParticle.bind(this));
 
             this.firstDraw = false;
         } else {
-            this.world.iterateActiveChunks((chunk) =>
+            world.iterateActiveChunks((chunk) =>
                 chunk.iterateDirtyParticles(this.handleParticle.bind(this))
             );
         }

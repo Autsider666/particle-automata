@@ -1,7 +1,8 @@
+import {World} from "../Grid/World.ts";
 import {CanvasRenderer} from "./CanvasRenderer.ts";
 
 export class DebugCanvasRenderer extends CanvasRenderer {
-    draw(): void {
+    draw(world: World): void {
         if (this.firstDraw) {
             this.firstDraw = false;
             this.clear();
@@ -9,7 +10,7 @@ export class DebugCanvasRenderer extends CanvasRenderer {
         }
 
         this.ctx.lineWidth = 1;
-        this.world.iterateAllChunks((chunk) => {
+        world.iterateAllChunks((chunk) => {
             const halfStroke = this.ctx.lineWidth * 0.5;
             if (chunk.isActive()) {
                 this.ctx.strokeStyle = 'rgb(50,114,99)';

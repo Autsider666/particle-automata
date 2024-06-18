@@ -2,6 +2,7 @@ import * as twgl from "twgl.js";
 import {RGBATuple} from "../../Utility/Color.ts";
 import {PixelDataHelper} from "../../Utility/Rendering/PixelDataHelper.ts";
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
+import {World} from "../Grid/World.ts";
 import {Particle} from "../Particle/Particle.ts";
 import {WorldCoordinate} from "../Type/Coordinate.ts";
 import {Renderer, RendererProps} from "./Renderer.ts";
@@ -41,7 +42,7 @@ export class WebGLRenderer extends Renderer {
         super(props);
         const {config,canvas} = props;
         this.pixels = new PixelDataHelper(
-            config.world.outerBounds,
+            config.initialScreenBounds,
             this.particleSize,
         );
 
@@ -64,7 +65,7 @@ export class WebGLRenderer extends Renderer {
         this.gl.enable(this.gl.CULL_FACE);
         this.gl.clearColor(0, 0, 0, 1);
 
-        this.resize(config.world.outerBounds);
+        this.resize(config.initialScreenBounds);
     }
 
     resize(dimensions: WorldDimensions): void {
@@ -93,12 +94,12 @@ export class WebGLRenderer extends Renderer {
         });
     }
 
-    draw(): void {
+    draw(world: World): void {
         if(this.firstDraw){
-            this.world.iterateAllParticles(this.handleParticle.bind(this));
+            world.iterateAllParticles(this.handleParticle.bind(this));
             this.firstDraw = false; // TODO generalize this away?
         } else {
-            this.world.iterateActiveChunks(chunk =>
+            world.iterateActiveChunks(chunk =>
                 chunk.iterateDirtyParticles(this.handleParticle.bind(this))
             );
         }

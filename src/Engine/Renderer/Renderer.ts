@@ -1,11 +1,10 @@
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
-import {EngineConfig} from "../EngineConfig.ts";
+import {RendererConfig} from "../Config/RendererConfig.ts";
 import {World} from "../Grid/World.ts";
 
 export type RendererProps = {
     canvas: HTMLCanvasElement | OffscreenCanvas
-    world: World,
-    config: EngineConfig,
+    config: RendererConfig,
 }
 
 export abstract class Renderer {
@@ -13,22 +12,19 @@ export abstract class Renderer {
     protected height: number;
     protected width: number;
     protected readonly canvas: HTMLCanvasElement | OffscreenCanvas;
-    protected readonly world: World;
     protected readonly particleSize: number;
 
     constructor({
                     canvas,
-                    world,
                     config,
                 }: RendererProps) {
         this.canvas = canvas;
-        this.world = world;
-        this.particleSize = config.simulation.particleSize;
-        this.height = config.world.outerBounds.height;
-        this.width = config.world.outerBounds.width;
+        this.particleSize = config.particleSize;
+        this.height = config.initialScreenBounds.height;
+        this.width = config.initialScreenBounds.width;
     }
 
-    abstract draw(): void;
+    abstract draw(world: World): void;
 
     resize({height, width}: WorldDimensions): void {
         this.firstDraw = true;
