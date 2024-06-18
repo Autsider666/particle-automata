@@ -1,10 +1,10 @@
 import {EventKey, EventMap} from "../../Utility/Event/Type.ts";
 import {Coordinate, WorldDimensions} from "../../Utility/Type/Dimensional.ts";
-import {Config} from "./Config.ts";
+import {EngineConfig} from "../EngineConfig.ts";
 import {RenderMode} from "./RenderMode.ts";
 
 export type WorkerMessage = {
-    init: Config,
+    init: EngineConfig,
     ready: undefined,
     startRendering: {
         mode: RenderMode,
@@ -17,6 +17,7 @@ export type WorkerMessage = {
     stop: undefined,
     resize: WorldDimensions,
     create: Coordinate,
+    keepAlive: undefined,
 }
 
 export type MessageMap<TMessages extends WorkerMessage = WorkerMessage> = {

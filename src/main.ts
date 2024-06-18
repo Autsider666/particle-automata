@@ -1,15 +1,18 @@
 import './style.css';
 import '@snackbar/core/dist/snackbar.css';
+import * as Comlink from "comlink";
 import {ObviousNonsenseBehaviourManager} from "./Engine/Behaviour/ObviousNonsenseBehaviourManager.ts";
 import {WorkerManager} from "./Engine/Browser/WorkerManager.ts";
+import {EngineConfigBuilder} from "./Engine/EngineConfig.ts";
 import {ParticleType} from "./Engine/Particle/ParticleType.ts";
 import {Renderer} from "./Engine/Renderer/Renderer.ts";
 import {RendererBuilder} from "./Engine/Renderer/RendererBuilder.ts";
 import {Simulator} from "./Engine/Simulator.ts";
-import {Config} from "./Engine/Type/Config.ts";
 import {WorldCoordinate} from "./Engine/Type/Coordinate.ts";
 import {RenderMode} from "./Engine/Type/RenderMode.ts";
 import {WorkerMessage} from "./Engine/Type/WorkerMessage.ts";
+import type {WebWorkerSimulation} from './Engine/Simulator/WebWorkerSimulation.ts';
+import Worker from './Engine/Simulator/WebWorkerSimulation.ts?worker';
 import {SimpleWorldBuilder} from "./Engine/World/SimpleWorldBuilder.ts";
 import {EventHandler} from "./Utility/Excalibur/EventHandler.ts";
 import {FrameRateManager} from "./Utility/FrameRateManager.ts";
@@ -23,71 +26,34 @@ if (!rootElement) {
 }
 
 const workerMode: boolean = URLParams.get('worker', "boolean") ?? false;
-const autoStartMode: boolean = URLParams.get('autoStart', "boolean") ?? true;
+const config = EngineConfigBuilder.generate();
 
-const renderModes: RenderMode[] = [];
+const Simulation = Comlink.wrap<WebWorkerSimulation>(new Worker());
 
-const modes = URLParams.get('renderMode', "string") ?? URLParams.get('mode', "string") ?? 'draw';
+init().then(() => console.log('init finished'));
 
-for (const mode of modes.split(',')) {
-    switch (mode) {
-        case 'debug':
-        case 'draw':
-            renderModes.push(RenderMode.Draw);
-            break;
-        case 'image':
-        case 'imageData':
-            renderModes.push(RenderMode.ImageData);
-            break;
-        case 'gl':
-        case 'webgl':
-            renderModes.push(RenderMode.WebGL);
-            break;
-    }
-
-    if (renderModes.length > 0) {
-        break;
-    }
-}
-
-const debugMode: boolean = URLParams.get('debug', "boolean") ?? false;
-if (debugMode && !renderModes.includes(RenderMode.WebGL)) {
-    renderModes.push(RenderMode.Debug);
-}
-
-const particleSize = URLParams.get('particleSize', "number") ?? 5;
-const config: Config = {
-    world: {
-        outerBounds: Traversal.getGridDimensions(
-            {
-                width: URLParams.get('width', "number") ?? window.outerWidth,
-                height: URLParams.get('height', "number") ?? window.innerHeight,
-            },
-            particleSize
-        )
-    },
-    chunks: {
-        size: URLParams.get('chunkSize', "number") ?? 10,
-    },
-    simulation: {
-        fps: URLParams.get('fps', "number") ?? 60,
-        particleSize,
-        startOnInit: autoStartMode,
-    },
-    worker: {
-        canvasIdentifier: 'canvas#offscreen',
-    },
-    debug: {
-        draw: false,
-        stats: true,
-        fillerOffset: 5,
-        fillerLimit: -1,
-    }
+const callback = (positions: Int32Array): void => {
+    console.log('callback!', positions, performance.now());
 };
+
+async function init(): Promise<void> {
+    // @ts-expect-error It has, but it just doesn't show here
+    const simulation = await new Simulation(config) as unknown as SimulationWorker;
+
+    await simulation.setCallback(Comlink.proxy(callback));
+
+    console.log('Start on main', performance.now());
+    await simulation.update();
+    console.log('1st done on main', performance.now());
+    await simulation.update();
+    console.log('2nd done on main', performance.now());
+    await simulation.update();
+    console.log('3th done on main', performance.now());
+}
 
 
 const events = new EventHandler<WorkerMessage>();
-let hasStarted: boolean = autoStartMode;
+let hasStarted: boolean = config.simulation.startOnInit ?? true;
 document.body.addEventListener('keypress', ({code}) => {
     if (code !== 'Space') {
         return;
@@ -125,7 +91,7 @@ if (workerMode) {
         () => {
             console.log('Worker started!');
 
-            for (const renderMode of renderModes) {
+            for (const renderMode of config.renderer.modes) {
                 workerManager.startRendering(renderMode, getCanvasForMode(renderMode));
             }
         }
@@ -138,7 +104,7 @@ if (workerMode) {
     const simulator = new Simulator(world, ObviousNonsenseBehaviourManager);
 
     const renderers: Renderer[] = [];
-    for (const renderMode of renderModes) {
+    for (const renderMode of config.renderer.modes) {
         renderers.push(RendererBuilder.build(renderMode, {
             world, config, canvas: getCanvasForMode(renderMode),
         }));
@@ -185,7 +151,7 @@ if (workerMode) {
             stats?.end();
         },
         config.simulation.fps,
-        !autoStartMode,
+        !hasStarted,
     );
     fpsManager.draw();
 

@@ -1,10 +1,10 @@
 import {FrameRateManager} from "../../Utility/FrameRateManager.ts";
 import {ObviousNonsenseBehaviourManager} from "../Behaviour/ObviousNonsenseBehaviourManager.ts";
+import {EngineConfig} from "../EngineConfig.ts";
 import {ParticleType} from "../Particle/ParticleType.ts";
 import {Renderer} from "../Renderer/Renderer.ts";
 import {RendererBuilder} from "../Renderer/RendererBuilder.ts";
 import {Simulator} from "../Simulator.ts";
-import {Config} from "../Type/Config.ts";
 import {WorldCoordinate} from "../Type/Coordinate.ts";
 import {RenderMode} from "../Type/RenderMode.ts";
 import {WorkerMessage} from "../Type/WorkerMessage.ts";
@@ -13,7 +13,7 @@ import {MessageHandler} from "./MessageHandler.ts";
 
 type RendererMap = { [key in RenderMode]?: Renderer };
 
-let config: Config;
+let config: EngineConfig;
 let simulator: Simulator;
 const renderers: RendererMap = {};
 

@@ -1,6 +1,6 @@
 import {EventEmitterInterface} from "../../Utility/Event/EventEmitterInterface.ts";
 import {EventKey} from "../../Utility/Event/Type.ts";
-import {Config} from "../Type/Config.ts";
+import {EngineConfig} from "../EngineConfig.ts";
 import {RenderMode} from "../Type/RenderMode.ts";
 import {WorkerMessage} from "../Type/WorkerMessage.ts";
 import {MessageHandler} from "../Worker/MessageHandler.ts";
@@ -12,7 +12,7 @@ export class WorkerManager<Events extends WorkerMessage = WorkerMessage> impleme
     private workerOnline: boolean = false;
 
     constructor(
-        config: Config,
+        config: EngineConfig,
         readyCallback?: () => void,
     ) {
         this.worker = new WebWorker();
@@ -26,6 +26,12 @@ export class WorkerManager<Events extends WorkerMessage = WorkerMessage> impleme
         });
 
         this.handler.emit('init', config);
+
+
+        // This is necessary in Safari to keep the worker alive.
+        setInterval(() => {
+            this.handler.emit('keepAlive', undefined);
+        }, 3000);
     }
 
     public pipeWorkerEvents(handler: EventEmitterInterface<Events>): void {

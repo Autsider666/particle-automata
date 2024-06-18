@@ -1,11 +1,11 @@
 import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
+import {EngineConfig} from "../EngineConfig.ts";
 import {World} from "../Grid/World.ts";
-import {Config} from "../Type/Config.ts";
 
 export type RendererProps = {
     canvas: HTMLCanvasElement | OffscreenCanvas
     world: World,
-    config: Config,
+    config: EngineConfig,
 }
 
 export abstract class Renderer {
