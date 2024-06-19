@@ -1,5 +1,7 @@
-import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
+import {DecodedBuffer} from "../../Utility/BufferBackedObject.ts";
+import {GridDimensions} from "../../Utility/Type/Dimensional.ts";
 import {RendererConfig} from "../Config/RendererConfig.ts";
+import {RenderParticleSchema} from "../Schema/RenderParticleSchema.ts";
 import {RendererWorld} from "./Type/RendererWorld.ts";
 
 export type RendererProps = {
@@ -24,9 +26,9 @@ export abstract class Renderer {
         this.width = config.initialScreenBounds.width;
     }
 
-    abstract draw(world: RendererWorld): void;
+    abstract draw(world: RendererWorld, renderParticles: DecodedBuffer<typeof RenderParticleSchema>[]): void;
 
-    resize({height, width}: WorldDimensions): void {
+    resize({height, width}: GridDimensions): void {
         this.firstDraw = true;
         this.height = height;
         this.width = width;

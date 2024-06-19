@@ -1,20 +1,20 @@
 import {RGBATuple} from "../Color.ts";
 import {BoundingBox} from "../Excalibur/BoundingBox.ts";
-import {Coordinate, WorldDimensions} from "../Type/Dimensional.ts";
+import {Coordinate, GridDimensions} from "../Type/Dimensional.ts";
 import {RenderHelper} from "./RenderHelper.ts";
 
 export class ImageDataHelper<C extends Coordinate = Coordinate> extends RenderHelper<C> {
     private imageData!: ImageData;
 
     constructor(
-        dimensions: WorldDimensions,
+        dimensions: GridDimensions,
         particleSize: number,
     ) {
         super(dimensions, particleSize, 4);
         this.resize(dimensions);
     }
 
-    resize({width, height}: WorldDimensions): void {
+    resize({width, height}: GridDimensions): void {
         this.width = width * this.particleSize;
         this.height = height * this.particleSize;
 

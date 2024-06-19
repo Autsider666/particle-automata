@@ -1,18 +1,22 @@
 import * as Comlink from "comlink";
+import {ArrayOfBufferBackedObjects, DecodedBuffer} from "../Utility/BufferBackedObject.ts";
 import {BaseEventHandler} from "../Utility/Excalibur/BaseEventHandler.ts";
 import {FrameRateManager} from "../Utility/FrameRateManager.ts";
 import Stats from "../Utility/Stats/Stats.ts";
-import {WorldDimensions} from "../Utility/Type/Dimensional.ts";
+import {GridDimensions} from "../Utility/Type/Dimensional.ts";
 import {EngineConfig} from "./Config/EngineConfig.ts";
 import {Renderer} from "./Renderer/Renderer.ts";
 import {RendererBuilder} from "./Renderer/RendererBuilder.ts";
 import {RendererChunk} from "./Renderer/Type/RendererChunk.ts";
 import {RendererParticle} from "./Renderer/Type/RendererParticle.ts";
 import {RendererWorld} from "./Renderer/Type/RendererWorld.ts";
+import {RenderParticleSchema} from "./Schema/RenderParticleSchema.ts";
 import {WebWorkerSimulation} from "./Simulation/WebWorkerSimulation.ts";
 import Worker from "./Simulation/WebWorkerSimulation.ts?worker";
 import {ChunkCoordinate, WorldCoordinate} from "./Type/Coordinate.ts";
 import {WorkerMessage} from "./Type/WorkerMessage.ts";
+
+let stop:boolean = false;
 
 export class Engine extends BaseEventHandler<WorkerMessage> {
     private isInitialized: boolean = false;
@@ -22,12 +26,15 @@ export class Engine extends BaseEventHandler<WorkerMessage> {
     private readonly renderers: Renderer[] = [];
     private readonly stats?: Stats;
     private readonly world: RendererWorld;
+    private renderParticles: DecodedBuffer<typeof RenderParticleSchema>[] = [];
 
     constructor(
         private readonly rootElement: HTMLElement,
         private readonly config: EngineConfig,
     ) {
         super();
+
+        console.log(config);
 
         this.world = {
             chunks: new Map<ChunkCoordinate, RendererChunk>(),
@@ -63,7 +70,7 @@ export class Engine extends BaseEventHandler<WorkerMessage> {
         }
     }
 
-    resize(dimensions: WorldDimensions): void {
+    resize(dimensions: GridDimensions): void {
         for (const renderer of this.renderers) {
             renderer.resize(dimensions);
         }
@@ -97,6 +104,10 @@ export class Engine extends BaseEventHandler<WorkerMessage> {
             await this.simulation.setUpdateCallback(this.handleSimulationUpdate.bind(this));
         }
 
+        // const buffer = await this.simulation.getRenderBuffer();
+        // this.renderParticles = ArrayOfBufferBackedObjects(buffer, RenderParticleSchema);
+
+
         await this.simulation.start();
         this.fpsManager.runCallback();
 
@@ -107,16 +118,25 @@ export class Engine extends BaseEventHandler<WorkerMessage> {
         return this.fpsManager.isRunning();
     }
 
-    private draw(): void {
+    private draw(particles?:DecodedBuffer<typeof RenderParticleSchema>[]): void {
         this.stats?.begin();
         for (const renderer of this.renderers) {
-            renderer.draw(this.world);
+            renderer.draw(this.world,particles ?? this.renderParticles);
         }
         this.stats?.end();
     }
 
-    private handleSimulationUpdate(): void {
-        this.world.dirtyParticles.clear();
-        this.world.dirtyChunks.clear();
+    private handleSimulationUpdate(buffer:ArrayBuffer): void {
+        if (stop) {
+            return;
+        }
+
+        stop = true;
+
+        const particles = ArrayOfBufferBackedObjects(buffer, RenderParticleSchema);
+
+        console.log('Refresh canvas?',particles.length);
+
+        this.draw(particles);
     }
 }

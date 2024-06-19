@@ -1,6 +1,6 @@
 import {RGBATuple} from "../../Utility/Color.ts";
 import {ImageDataHelper} from "../../Utility/Rendering/ImageDataHelper.ts";
-import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
+import {GridDimensions, Traversal} from "../../Utility/Type/Dimensional.ts";
 import {WorldCoordinate} from "../Type/Coordinate.ts";
 import {Abstract2DContextRenderer} from "./Abstract2DContextRenderer.ts";
 import {RendererProps} from "./Renderer.ts";
@@ -13,12 +13,12 @@ export class ImageDataRenderer extends Abstract2DContextRenderer {
     constructor(props: RendererProps) {
         super(props);
         this.imageData = new ImageDataHelper(
-            props.config.initialScreenBounds,
+            Traversal.getGridDimensions(props.config.initialScreenBounds,this.particleSize),
             this.particleSize,
         );
     }
 
-    resize(dimensions: WorldDimensions): void {
+    resize(dimensions: GridDimensions): void {
         this.clear();
         super.resize(dimensions);
         this.clear();

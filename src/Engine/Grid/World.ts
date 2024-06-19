@@ -1,32 +1,30 @@
-import {createSnackbar} from "@snackbar/core";
+import {ArrayOfBufferBackedObjects, DecodedBuffer, structSize} from "../../Utility/BufferBackedObject.ts";
+import {BaseEventHandler} from "../../Utility/Excalibur/BaseEventHandler.ts";
 import {BoundingBox} from "../../Utility/Excalibur/BoundingBox.ts";
-import {onWorker} from "../../Utility/OnWorker.ts";
-import type {Direction} from "../../Utility/Type/Dimensional.ts";
+import type {Dimensions, Direction} from "../../Utility/Type/Dimensional.ts";
 import {Traversal} from "../../Utility/Type/Dimensional.ts";
 import {Particle} from "../Particle/Particle.ts";
+import {RenderParticleSchema} from "../Schema/RenderParticleSchema.ts";
 import {ChunkCoordinate, WorldCoordinate} from "../Type/Coordinate.ts";
 import {Chunk} from "./Chunk.ts";
 
-export class World {
+export type WorldEvent = {
+    worldCreated: Dimensions,
+    chunkCreated: { coordinate: ChunkCoordinate, chunk:Chunk }
+}
+
+export class World extends BaseEventHandler<WorldEvent> {
     private readonly chunks = new Map<string, Chunk | undefined>();
     private readonly activeChunks: { chunk: Chunk, coordinate: ChunkCoordinate }[] = [];
+    private activeParticles: number = 0;
 
     constructor(
         public readonly chunkSize: number,
-        private readonly outerBounds?: BoundingBox,
+        private readonly outerBounds: BoundingBox<WorldCoordinate>,
     ) {
-        if (outerBounds && !onWorker()) {
-            const message = document.createElement('div');
-            message.innerHTML = `<strong>World</strong> <br/> 
-<strong>Size: </strong> <i>${outerBounds.width} x ${outerBounds.height}</i> </br>
-<strong>Max particles: </strong><i>${
-                (outerBounds.width * outerBounds.height).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-            }</i>`;
-            createSnackbar(message, {
-                timeout: 0,
-                position: 'right'
-            });
-        }
+        super();
+
+        this.emit('worldCreated', outerBounds);
     }
 
     get totalChunks(): number {
@@ -38,7 +36,12 @@ export class World {
     }
 
     setParticle(coordinate: WorldCoordinate, particle: Particle): boolean {
-        return !!this.getChunk(coordinate)?.setParticle(coordinate, particle);
+        const result = !!this.getChunk(coordinate)?.setParticle(coordinate, particle);
+        if (!result) {
+            console.warn('setParticle Failed', coordinate, particle);
+        }
+
+        return result;
     }
 
     moveParticle<P extends Particle = Particle>(
@@ -82,6 +85,12 @@ export class World {
         });
     }
 
+    public iterateDirtyParticles<P extends Particle = Particle>(callback: (particle: P, coordinate: WorldCoordinate) => void): void {
+        this.iterateActiveChunks(chunk => {
+            chunk.iterateDirtyParticles(callback);
+        });
+    }
+
     private toCoordinate(key: string): ChunkCoordinate {
         const [x, y] = key.split('-').map(string => parseInt(string));
         return {x, y} as ChunkCoordinate;
@@ -110,14 +119,18 @@ export class World {
 
     private createChunk(coordinate: ChunkCoordinate): Chunk | undefined {
         const {x, y} = coordinate;
-        const bounds = BoundingBox.fromDimension(this.chunkSize, this.chunkSize, {
+        const bounds = BoundingBox.fromDimension<WorldCoordinate>(this.chunkSize, this.chunkSize, {
             x: x * this.chunkSize,
             y: y * this.chunkSize
-        });
+        } as WorldCoordinate);
+
+        console.log(coordinate, bounds, this.outerBounds, this.outerBounds?.containsBoundingBox(bounds));
 
         let chunk: Chunk | undefined;
         if (this.outerBounds?.containsBoundingBox(bounds) !== false) {
             chunk = new Chunk(bounds);
+
+            this.emit('chunkCreated', {coordinate, chunk});
         }
 
         this.chunks.set(this.toKey(coordinate), chunk);
@@ -159,14 +172,61 @@ export class World {
     }
 
     prepareForUpdate() {
+        this.activeParticles = 0;
         this.activeChunks.length = 0;
         for (const [key, chunk] of this.chunks) {
             if (chunk?.isActive()) {
+                this.activeParticles += chunk.getActiveParticleCount();
                 this.activeChunks.unshift({
                     chunk,
                     coordinate: this.toCoordinate(key),
                 });
             }
         }
+    }
+
+    updateRenderParticles(renderParticles: DecodedBuffer<typeof RenderParticleSchema>[]) {
+        this.iterateDirtyParticles((particle, coordinate) => {
+            const renderParticle: DecodedBuffer<typeof RenderParticleSchema> | undefined = renderParticles[this.toWorldIndex(coordinate)];
+            if (!renderParticle) {
+                throw new Error('No render particle for this index?');
+            }
+
+            renderParticle.color.red = particle.colorTuple ? particle.colorTuple[0] : 0;
+            renderParticle.color.green = particle.colorTuple ? particle.colorTuple[0] : 0;
+            renderParticle.color.blue = particle.colorTuple ? particle.colorTuple[0] : 0;
+        });
+    }
+
+    private toWorldIndex({x, y}: WorldCoordinate): number {
+        return y * this.outerBounds?.width + x;
+    }
+
+    getChangedParticleBuffer(): ArrayBuffer {
+        const buffer = new ArrayBuffer(structSize(RenderParticleSchema) * this.outerBounds.width * this.outerBounds.height);
+        const particles = ArrayOfBufferBackedObjects(buffer, RenderParticleSchema);
+
+
+        let i: number = 0;
+        this.iterateAllParticles((particle, {x, y}) => {
+            const renderParticle: DecodedBuffer<typeof RenderParticleSchema> | undefined = particles[i];
+            if (!renderParticle) {
+                throw new Error('No render particle for this index?');
+            }
+
+            console.log(x, y, particle);
+
+            renderParticle.coordinate.x = x;
+            renderParticle.coordinate.y = y;
+
+            renderParticle.color.red = particle.colorTuple ? particle.colorTuple[0] : 0;
+            renderParticle.color.green = particle.colorTuple ? particle.colorTuple[0] : 0;
+            renderParticle.color.blue = particle.colorTuple ? particle.colorTuple[0] : 0;
+
+            i++;
+        });
+
+
+        return buffer;
     }
 }

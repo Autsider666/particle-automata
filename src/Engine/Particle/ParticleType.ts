@@ -38,7 +38,7 @@ export type ParticleType = keyof typeof particleTypes;
 
 const particleTypes = {
     Air: {
-        color: '#00000000',
+        color: '#0f1726',
         colorVariance: false,
         density: 1,
         maxSpeed: 0,

@@ -1,4 +1,4 @@
-import {Traversal} from "../../Utility/Type/Dimensional.ts";
+import {Traversal, ViewportDimensions} from "../../Utility/Type/Dimensional.ts";
 import {URLParams} from "../../Utility/URLParams.ts";
 import {RenderMode} from "../Type/RenderMode.ts";
 import {RendererConfig} from "./RendererConfig.ts";
@@ -68,7 +68,7 @@ export class EngineConfigBuilder {
             },
             renderer: {
                 modes: renderModes,
-                initialScreenBounds: outerBounds,
+                initialScreenBounds: {width: outerWidth, height: window.innerHeight} as ViewportDimensions,
                 particleSize,
             },
         };

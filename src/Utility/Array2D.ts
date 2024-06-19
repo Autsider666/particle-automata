@@ -93,7 +93,11 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
         }
     }
 
-    resetChanges():void {
+    getChangesCount(): number {
+        return this.changedIndexes.size;
+    }
+
+    resetChanges(): void {
         this.changedIndexes.clear();
     }
 

@@ -6,7 +6,8 @@ export type Dimensions<Height extends number = number, Width extends number = nu
     height: Height,
     width: Width
 }>;
-export type WorldDimensions = Distinct<Dimensions, 'Grid'>;
+export type GridDimensions = Distinct<Dimensions, 'Grid'>;
+export type ViewportDimensions = Distinct<Dimensions, 'Viewport'>;
 
 export class Traversal {
     static getDestinationCoordinate<C extends Coordinate = Coordinate>({x, y}: C, {dX, dY}: Direction): C {
@@ -16,10 +17,10 @@ export class Traversal {
         } as C;
     }
 
-    static getGridDimensions({width, height}: Dimensions, particleSize: number): WorldDimensions {
+    static getGridDimensions({width, height}: Dimensions, particleSize: number): GridDimensions {
         return {
             height: Math.round(height / particleSize),
             width: Math.round(width / particleSize),
-        } as WorldDimensions;
+        } as GridDimensions;
     }
 }

@@ -1,4 +1,4 @@
-import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
+import {GridDimensions} from "../../Utility/Type/Dimensional.ts";
 import {WorldCoordinate} from "../Type/Coordinate.ts";
 import {Abstract2DContextRenderer} from "./Abstract2DContextRenderer.ts";
 import {RendererParticle} from "./Type/RendererParticle.ts";
@@ -6,7 +6,7 @@ import {RendererWorld} from "./Type/RendererWorld.ts";
 
 
 export class CanvasRenderer extends Abstract2DContextRenderer {
-    resize(dimensions: WorldDimensions): void {
+    resize(dimensions: GridDimensions): void {
         this.clear();
         super.resize(dimensions);
         this.clear();

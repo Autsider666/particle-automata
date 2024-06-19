@@ -1,10 +1,10 @@
 import * as twgl from "twgl.js";
-import {RGBATuple} from "../../Utility/Color.ts";
+import {DecodedBuffer} from "../../Utility/BufferBackedObject.ts";
 import {PixelDataHelper} from "../../Utility/Rendering/PixelDataHelper.ts";
-import {WorldDimensions} from "../../Utility/Type/Dimensional.ts";
+import {GridDimensions, Traversal} from "../../Utility/Type/Dimensional.ts";
+import {RenderParticleSchema} from "../Schema/RenderParticleSchema.ts";
 import {WorldCoordinate} from "../Type/Coordinate.ts";
 import {Renderer, RendererProps} from "./Renderer.ts";
-import {RendererParticle} from "./Type/RendererParticle.ts";
 import {RendererWorld} from "./Type/RendererWorld.ts";
 
 const vertexShader = `
@@ -41,8 +41,10 @@ export class WebGLRenderer extends Renderer {
     constructor(props: RendererProps) {
         super(props);
         const {config, canvas} = props;
+
+        const gridDimensions = Traversal.getGridDimensions(config.initialScreenBounds,this.particleSize);
         this.pixels = new PixelDataHelper(
-            config.initialScreenBounds,
+            gridDimensions,
             this.particleSize,
         );
 
@@ -65,10 +67,10 @@ export class WebGLRenderer extends Renderer {
         this.gl.enable(this.gl.CULL_FACE);
         this.gl.clearColor(0, 0, 0, 1);
 
-        this.resize(config.initialScreenBounds);
+        this.resize(gridDimensions);
     }
 
-    resize(dimensions: WorldDimensions): void {
+    resize(dimensions: GridDimensions): void {
         super.resize(dimensions);
         this.pixels.resize(dimensions);
 
@@ -94,13 +96,14 @@ export class WebGLRenderer extends Renderer {
         });
     }
 
-    draw({dirtyParticles}: RendererWorld): void {
+    draw(_world: RendererWorld, renderParticles: DecodedBuffer<typeof RenderParticleSchema>[]): void {
         if (this.firstDraw) {
             this.firstDraw = false; // TODO generalize this away?
         }
 
-        for (const [coordinate, particle] of dirtyParticles) {
-            this.handleParticle(coordinate, particle);
+        const particleCount = renderParticles.length;
+        for (let i = 0; i < particleCount; i++) {
+            this.handleParticle(renderParticles[i]);
         }
 
         // Update texture
@@ -112,7 +115,6 @@ export class WebGLRenderer extends Renderer {
         // Render
         twgl.setBuffersAndAttributes(this.gl, this.programInfo, this.bufferInfo);
         twgl.drawBufferInfo(this.gl, this.bufferInfo, this.gl.TRIANGLE_STRIP);
-
         this.frame++;
     }
 
@@ -129,29 +131,51 @@ export class WebGLRenderer extends Renderer {
         });
     }
 
-    private handleParticle(coordinate: WorldCoordinate, particle: RendererParticle): void {
-        if (particle.ephemeral) {
-            this.clearGridElement(coordinate);
-        } else {
-            this.fillGridElement(coordinate, particle.color.tuple);
-        }
-    }
+    // private handleParticle(coordinate: WorldCoordinate, particle: RendererParticle): void {
+    //     if (particle.ephemeral) {
+    //         this.clearGridElement(coordinate);
+    //     } else {
+    //         this.fillGridElement(coordinate, particle.color.tuple);
+    //     }
+    // }
+    // private handleParticle(particle:DecodedBuffer<typeof RenderParticleSchema>): void {
+    //     if (particle.ephemeral) {
+    //         this.clearGridElement(coordinate);
+    //     } else {
+    //         this.fillGridElement(coordinate, particle.color.tuple);
+    //     }
+    // }
 
-    private clearGridElement(coordinate: WorldCoordinate): void {
+    private handleParticle(particle:DecodedBuffer<typeof RenderParticleSchema>): void {
+        const coordinate = particle.coordinate;
         this.pixels.fillRectangle(
-            coordinate,
+            {x:coordinate.x, y:coordinate.y} as WorldCoordinate,
             this.particleSize,
             this.particleSize,
-            [0, 0, 0, 255],
+            [
+                particle.color.red,
+                particle.color.green,
+                particle.color.blue,
+                0,
+            ],
         );
     }
 
-    private fillGridElement(coordinate: WorldCoordinate, color: RGBATuple) {
-        this.pixels.fillRectangle(
-            coordinate,
-            this.particleSize,
-            this.particleSize,
-            color,
-        );
-    }
+    // private clearGridElement(coordinate: WorldCoordinate): void {
+    //     this.pixels.fillRectangle(
+    //         coordinate,
+    //         this.particleSize,
+    //         this.particleSize,
+    //         [0, 0, 0, 255],
+    //     );
+    // }
+    //
+    // private fillGridElement(coordinate: WorldCoordinate, color: RGBATuple) {
+    //     this.pixels.fillRectangle(
+    //         coordinate,
+    //         this.particleSize,
+    //         this.particleSize,
+    //         color,
+    //     );
+    // }
 }

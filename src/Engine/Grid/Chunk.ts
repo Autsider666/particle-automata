@@ -22,7 +22,7 @@ export class Chunk {
     }
 
     public iterateDirtyParticles<P extends Particle = Particle>(callback: (particle: P, coordinate: WorldCoordinate) => void): void {
-        this.particles.iterateChanges((particle, coordinate)=> {
+        this.particles.iterateChanges((particle, coordinate) => {
             callback(particle as P, coordinate);
         });
     }
@@ -85,5 +85,13 @@ export class Chunk {
     public wakeUp(): void {
         this.shouldUpdate = true;
         this.shouldUpdateNextTime = true;
+    }
+
+    getActiveParticleCount(): number {
+        if (!this.shouldUpdate) {
+            return 0;
+        }
+
+        return this.particles.getChangesCount();
     }
 }

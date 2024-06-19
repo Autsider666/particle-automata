@@ -1,6 +1,6 @@
 import {RGBATuple} from "../Color.ts";
 import {BoundingBox} from "../Excalibur/BoundingBox.ts";
-import {Coordinate, WorldDimensions} from "../Type/Dimensional.ts";
+import {Coordinate, GridDimensions} from "../Type/Dimensional.ts";
 
 export abstract class RenderHelper<C extends Coordinate = Coordinate> {
     protected gridBounds!: BoundingBox<C>;
@@ -8,7 +8,7 @@ export abstract class RenderHelper<C extends Coordinate = Coordinate> {
     protected height: number;
 
     constructor(
-        {width, height}: WorldDimensions,
+        {width, height}: GridDimensions,
         protected readonly particleSize: number,
         protected readonly bytesPerPixel: number = 4
     ) {
@@ -19,8 +19,11 @@ export abstract class RenderHelper<C extends Coordinate = Coordinate> {
 
     //TODO Cache rectangles?
     public fillRectangle(coordinate: C, width: number, height: number, color: RGBATuple): void {
-        if (!this.gridBounds.containsCoordinate(coordinate)) {
+        if (!this.gridBounds.containsCoordinate(coordinate) || color.filter(value => value !== 0).length === 0) {
             return;
+        }
+        if (coordinate.x !== 0) {
+            console.log(this.gridBounds, coordinate, color);
         }
 
         const dX = coordinate.x * this.particleSize;
