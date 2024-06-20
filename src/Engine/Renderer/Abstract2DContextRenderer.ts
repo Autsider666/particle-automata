@@ -1,6 +1,7 @@
-import {Renderer, RendererProps} from "./Renderer.ts";
+import {ViewportDimensions} from "../../Utility/Type/Dimensional.ts";
+import {BaseRenderer, RendererProps} from "./BaseRenderer.ts";
 
-export abstract class Abstract2DContextRenderer extends Renderer {
+export abstract class Abstract2DContextRenderer extends BaseRenderer {
     protected readonly ctx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
 
     constructor(props: RendererProps) {
@@ -12,6 +13,12 @@ export abstract class Abstract2DContextRenderer extends Renderer {
         }
 
         this.ctx = ctx;
+    }
+
+    resize(dimensions: ViewportDimensions): void {
+        this.clear();
+        super.resize(dimensions);
+        this.clear();
     }
 
     protected clear(): void {

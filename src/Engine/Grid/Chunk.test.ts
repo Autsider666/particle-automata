@@ -1,41 +1,41 @@
 import {expect, test} from 'vitest';
 import {BoundingBox} from "../../Utility/Excalibur/BoundingBox.ts";
 import {ParticleType} from "../Particle/ParticleType.ts";
-import {WorldCoordinate} from "../Type/Coordinate.ts";
+import {GridCoordinate} from "../Type/Coordinate.ts";
 import {Chunk} from './Chunk.ts';
 
 const testBounds = BoundingBox.fromDimension(10, 5);
 
 test('Can get particle', () => {
     const chunk = new Chunk(testBounds, () => ParticleType.Air);
-    const coordinate = {x: 5, y: 1} as WorldCoordinate;
+    const coordinate = {x: 5, y: 1} as GridCoordinate;
 
-    expect(chunk.getParticle(coordinate).color).to.eq(ParticleType.Air.color);
+    expect(chunk.getParticle(coordinate).baseColor).to.eq(ParticleType.Air.color);
 });
 
 test('Throws error on get with invalid coordinate', () => {
     const chunk = new Chunk(testBounds);
 
-    expect(() => chunk.getParticle({x: -10, y: 1} as WorldCoordinate)).to.throw('Invalid coordinate');
-    expect(() => chunk.getParticle({x: 10, y: 1} as WorldCoordinate)).to.throw('Invalid coordinate');
-    expect(() => chunk.getParticle({x: -10, y: -1} as WorldCoordinate)).to.throw('Invalid coordinate');
+    expect(() => chunk.getParticle({x: -10, y: 1} as GridCoordinate)).to.throw('Invalid coordinate');
+    expect(() => chunk.getParticle({x: 10, y: 1} as GridCoordinate)).to.throw('Invalid coordinate');
+    expect(() => chunk.getParticle({x: -10, y: -1} as GridCoordinate)).to.throw('Invalid coordinate');
 });
 
 test('Can set particle', () => {
     const chunk = new Chunk(testBounds);
-    const coordinate = {x: 2, y: 1} as WorldCoordinate;
+    const coordinate = {x: 2, y: 1} as GridCoordinate;
 
     expect(chunk.getParticle(coordinate)).to.not.eq(ParticleType.Air);
-    expect(chunk.getParticle(coordinate).color).to.eq(ParticleType.Air.color);
+    expect(chunk.getParticle(coordinate).baseColor).to.eq(ParticleType.Air.color);
     expect(() => chunk.setParticle(coordinate, ParticleType.Sand)).to.not.throw();
     expect(chunk.getParticle(coordinate)).to.not.eq(ParticleType.Sand);
-    expect(chunk.getParticle(coordinate).color).to.not.eq(ParticleType.Sand.color);
+    expect(chunk.getParticle(coordinate).baseColor).to.not.eq(ParticleType.Sand.color);
     expect(chunk.getParticle(coordinate).density).to.eq(ParticleType.Sand.density);
 });
 
 test('Throws error on set with invalid coordinate', () => {
     const chunk = new Chunk(testBounds);
-    const coordinate = {x: -10, y: 10} as WorldCoordinate;
+    const coordinate = {x: -10, y: 10} as GridCoordinate;
 
     expect(() => chunk.setParticle(coordinate, ParticleType.Sand)).to.throw('Invalid coordinate');
 });

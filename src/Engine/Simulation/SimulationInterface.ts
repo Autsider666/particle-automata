@@ -5,6 +5,7 @@ export type SimulationEvent = {
     preUpdate: World,
     postUpdate: World,
 }
+
 export interface SimulationInterface extends EventListenerInterface<SimulationEvent> {
     update(): void;
 }

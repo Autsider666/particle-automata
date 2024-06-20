@@ -1,27 +1,41 @@
 import * as Comlink from "comlink";
+import {EventHandler} from "../../Utility/Excalibur/EventHandler.ts";
 import {FrameRateManager} from "../../Utility/FrameRateManager.ts";
 import {ObviousNonsenseBehaviourManager} from "../Behaviour/ObviousNonsenseBehaviourManager.ts";
 import {SimulationConfig} from "../Config/SimulationConfig.ts";
 import {World} from "../Grid/World.ts";
 import {ParticleType} from "../Particle/ParticleType.ts";
-import {WorldCoordinate} from "../Type/Coordinate.ts";
+import {GridCoordinate} from "../Type/Coordinate.ts";
 import {SimpleWorldBuilder} from "../World/SimpleWorldBuilder.ts";
+import {WorldEvent} from "../World/WorldBuilder.ts";
 import {Simulation} from "./Simulation.ts";
 import {SimulationInterface} from "./SimulationInterface.ts";
 
+export type UpdateData = {
+    newBuffers: SharedArrayBuffer[],
+    dirtyChunks: number[],
+    dirtyParticles: number[],
+}
+
+export type UpdateCallback = (data: UpdateData) => void
+
 export class WebWorkerSimulation {
-    private updateCallback?: (buffer:ArrayBuffer) => void;
     private readonly fpsManager: FrameRateManager;
     private readonly simulation: SimulationInterface;
     private readonly world: World;
+    private readonly events = new EventHandler<WorldEvent>();
+    private readonly unsendChunkBuffers: SharedArrayBuffer[] = [];
     // private readonly renderBuffer: SharedArrayBuffer;
     // private readonly renderParticles: DecodedBuffer<typeof RenderParticleSchema>[];
 
     constructor(
         private readonly config: SimulationConfig,
+        private readonly updateCallback: UpdateCallback
     ) {
-        this.world = new SimpleWorldBuilder().build(this.config);
-        console.log(this.world.setParticle({x:3,y:0} as WorldCoordinate, ParticleType.Sand));
+        this.events.on('chunkCreated', ({chunk}) => this.unsendChunkBuffers.push(chunk.buffer));
+
+        this.world = new SimpleWorldBuilder().build(this.config, this.events);
+        this.world.setParticle({x: 2, y: 0} as GridCoordinate, ParticleType.Sand);
 
         this.simulation = new Simulation(this.world, ObviousNonsenseBehaviourManager);
         this.fpsManager = new FrameRateManager(this.update.bind(this), config.fps, true);
@@ -40,18 +54,27 @@ export class WebWorkerSimulation {
 
     private update(): void {
         this.simulation.update();
-        if (!this.updateCallback) {
-            return;
-        }
 
-        // this.world.updateRenderParticles(this.renderParticles);
+        // if (this.unsendChunkBuffers.length === 0) {
+        //     return;
+        // }
 
-        this.updateCallback(this.world.getChangedParticleBuffer());
+        this.updateCallback({
+            newBuffers: this.unsendChunkBuffers,
+            dirtyChunks: this.world.getActiveChunkIds(),
+            dirtyParticles: [],
+        });
+
+        this.unsendChunkBuffers.length = 0;
     }
 
-    async setUpdateCallback(callback: ((buffer:ArrayBuffer) => void)): Promise<void> {
-        this.updateCallback = callback;
-    }
+    // async setUpdateCallback(callback: ((buffer: ArrayBuffer) => void)): Promise<void> {
+    //     this.updateCallback = callback;
+    // }
+    //
+    // async setNewChunkCallback(callback: SharedArrayBufferCallback): Promise<void> {
+    //     this.newChunkCallback = callback;
+    // }
 
     // async getRenderBuffer():Promise<SharedArrayBuffer> {
     //     return this.renderBuffer;

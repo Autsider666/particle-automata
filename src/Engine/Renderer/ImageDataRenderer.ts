@@ -1,52 +1,48 @@
-import {RGBATuple} from "../../Utility/Color.ts";
+import {DecodedBuffer} from "../../Utility/BufferBackedObject.ts";
 import {ImageDataHelper} from "../../Utility/Rendering/ImageDataHelper.ts";
-import {GridDimensions, Traversal} from "../../Utility/Type/Dimensional.ts";
-import {WorldCoordinate} from "../Type/Coordinate.ts";
+import {ViewportDimensions} from "../../Utility/Type/Dimensional.ts";
+import {RGBAColorDescriptor} from "../Schema/ColorSchema.ts";
+import {GridCoordinate} from "../Type/Coordinate.ts";
 import {Abstract2DContextRenderer} from "./Abstract2DContextRenderer.ts";
-import {RendererProps} from "./Renderer.ts";
+import {RendererProps} from "./BaseRenderer.ts";
 import {RendererParticle} from "./Type/RendererParticle.ts";
 import {RendererWorld} from "./Type/RendererWorld.ts";
 
 export class ImageDataRenderer extends Abstract2DContextRenderer {
-    private imageData: ImageDataHelper<WorldCoordinate>;
+    private imageData: ImageDataHelper;
 
     constructor(props: RendererProps) {
         super(props);
         this.imageData = new ImageDataHelper(
-            Traversal.getGridDimensions(props.config.initialScreenBounds,this.particleSize),
+            props.config.viewport,
             this.particleSize,
         );
     }
 
-    resize(dimensions: GridDimensions): void {
-        this.clear();
+    resize(dimensions: ViewportDimensions): void {
         super.resize(dimensions);
-        this.clear();
 
         this.imageData.resize(dimensions);
     }
 
-    draw({dirtyParticles}: RendererWorld): void {
-        if (this.firstDraw) {
-            this.firstDraw = false;
-        }
-
-        for (const [coordinate, particle] of dirtyParticles) {
-            this.handleParticle(coordinate, particle);
+    protected draw({dirtyParticles, particles}: RendererWorld): void {
+        for (const index of dirtyParticles) {
+            this.handleParticle(particles[index]);
         }
 
         this.imageData.applyImageData(this.ctx);
     }
 
-    private handleParticle(coordinate: WorldCoordinate, particle: RendererParticle): void {
+    private handleParticle(particle: RendererParticle): void {
+        console.log(particle.coordinate);
         if (particle.ephemeral) {
-            this.clearGridElement(coordinate);
+            this.clearGridElement(particle.coordinate as GridCoordinate);
         } else {
-            this.fillGridElement(coordinate, particle.color.tuple);
+            this.fillGridElement(particle.coordinate as GridCoordinate, particle.color);
         }
     }
 
-    private clearGridElement(coordinate: WorldCoordinate): void {
+    private clearGridElement(coordinate: GridCoordinate): void {
         this.imageData.fillRectangle(
             coordinate,
             this.particleSize,
@@ -55,12 +51,12 @@ export class ImageDataRenderer extends Abstract2DContextRenderer {
         );
     }
 
-    private fillGridElement(coordinate: WorldCoordinate, color: RGBATuple) {
+    private fillGridElement(coordinate: GridCoordinate, color: DecodedBuffer<RGBAColorDescriptor>) {
         this.imageData.fillRectangle(
             coordinate,
             this.particleSize,
             this.particleSize,
-            color,
+            [color.red, color.green, color.blue, color.alpha],
         );
     }
 }

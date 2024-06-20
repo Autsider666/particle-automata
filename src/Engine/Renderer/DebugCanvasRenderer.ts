@@ -2,9 +2,8 @@ import {CanvasRenderer} from "./CanvasRenderer.ts";
 import {RendererWorld} from "./Type/RendererWorld.ts";
 
 export class DebugCanvasRenderer extends CanvasRenderer {
-    draw({dirtyChunks, chunks}: RendererWorld): void {
+    protected draw({dirtyChunks, chunks}: RendererWorld): void {
         if (this.firstDraw) {
-            this.firstDraw = false;
             this.clear();
             return;
         }
@@ -13,7 +12,8 @@ export class DebugCanvasRenderer extends CanvasRenderer {
         const halfStroke = this.ctx.lineWidth * 0.5;
         this.ctx.strokeStyle = 'rgb(50,114,99)';
         const dirtyChunkSet = new Set<number>();
-        for (const [,chunk] of dirtyChunks) {
+        for (const index of dirtyChunks) {
+            const chunk = chunks[index];
             dirtyChunkSet.add(chunk.id);
             this.ctx.strokeRect(
                 chunk.bounds.left * this.particleSize + halfStroke,
@@ -24,7 +24,7 @@ export class DebugCanvasRenderer extends CanvasRenderer {
         }
 
 
-        for (const [, chunk] of chunks) {
+        for (const chunk of chunks) {
             if (dirtyChunkSet.has(chunk.id)) {
                 continue;
             }

@@ -1,51 +1,43 @@
 import * as Comlink from "comlink";
-import {ArrayOfBufferBackedObjects, DecodedBuffer} from "../Utility/BufferBackedObject.ts";
+import {BufferBackedObject} from "../Utility/BufferBackedObject.ts";
 import {BaseEventHandler} from "../Utility/Excalibur/BaseEventHandler.ts";
 import {FrameRateManager} from "../Utility/FrameRateManager.ts";
 import Stats from "../Utility/Stats/Stats.ts";
-import {GridDimensions} from "../Utility/Type/Dimensional.ts";
+import {ViewportDimensions} from "../Utility/Type/Dimensional.ts";
 import {EngineConfig} from "./Config/EngineConfig.ts";
-import {Renderer} from "./Renderer/Renderer.ts";
-import {RendererBuilder} from "./Renderer/RendererBuilder.ts";
-import {RendererChunk} from "./Renderer/Type/RendererChunk.ts";
-import {RendererParticle} from "./Renderer/Type/RendererParticle.ts";
+import {DynamicRenderer} from "./Renderer/DynamicRenderer.ts";
+import {RendererInterface} from "./Renderer/RendererInterface.ts";
 import {RendererWorld} from "./Renderer/Type/RendererWorld.ts";
-import {RenderParticleSchema} from "./Schema/RenderParticleSchema.ts";
-import {WebWorkerSimulation} from "./Simulation/WebWorkerSimulation.ts";
+import {ChunkSchema} from "./Schema/ChunkSchema.ts";
+import {UpdateData, WebWorkerSimulation} from "./Simulation/WebWorkerSimulation.ts";
 import Worker from "./Simulation/WebWorkerSimulation.ts?worker";
-import {ChunkCoordinate, WorldCoordinate} from "./Type/Coordinate.ts";
 import {WorkerMessage} from "./Type/WorkerMessage.ts";
-
-let stop:boolean = false;
 
 export class Engine extends BaseEventHandler<WorkerMessage> {
     private isInitialized: boolean = false;
 
     private simulation!: WebWorkerSimulation;
     private fpsManager: FrameRateManager;
-    private readonly renderers: Renderer[] = [];
+    private renderer: RendererInterface;
     private readonly stats?: Stats;
     private readonly world: RendererWorld;
-    private renderParticles: DecodedBuffer<typeof RenderParticleSchema>[] = [];
 
     constructor(
-        private readonly rootElement: HTMLElement,
+        rootElement: HTMLElement,
         private readonly config: EngineConfig,
     ) {
         super();
 
-        console.log(config);
+        console.log(this.config);
 
         this.world = {
-            chunks: new Map<ChunkCoordinate, RendererChunk>(),
-            dirtyChunks: new Map<ChunkCoordinate, RendererChunk>(),
-            dirtyParticles: new Map<WorldCoordinate, RendererParticle>(),
-            particles: new Map<WorldCoordinate, RendererParticle>()
+            chunks: [],
+            dirtyChunks: [],
+            dirtyParticles: [],
+            particles: [],
         };
 
-        for (const renderMode of this.config.renderer.modes) {
-            this.renderers.push(RendererBuilder.build(renderMode, this.config.renderer, this.rootElement));
-        }
+        this.renderer = new DynamicRenderer(config.renderer, rootElement);
 
         this.fpsManager = new FrameRateManager(
             this.draw.bind(this),
@@ -70,10 +62,8 @@ export class Engine extends BaseEventHandler<WorkerMessage> {
         }
     }
 
-    resize(dimensions: GridDimensions): void {
-        for (const renderer of this.renderers) {
-            renderer.resize(dimensions);
-        }
+    resize(viewport: ViewportDimensions): void {
+        this.renderer.resize(viewport);
     }
 
     start(): void {
@@ -97,16 +87,16 @@ export class Engine extends BaseEventHandler<WorkerMessage> {
             const Simulation = Comlink.wrap<WebWorkerSimulation>(new Worker());
 
             // @ts-expect-error Does not believe Simulation has a constructor.
-            this.simulation = await new Simulation(this.config.simulation);
-            await this.simulation.setUpdateCallback(Comlink.proxy(this.handleSimulationUpdate.bind(this)));
+            this.simulation = await new Simulation(
+                this.config.simulation,
+                Comlink.proxy(this.handleSimulationUpdate.bind(this)),
+            );
         } else {
-            this.simulation = new WebWorkerSimulation(this.config.simulation);
-            await this.simulation.setUpdateCallback(this.handleSimulationUpdate.bind(this));
+            this.simulation = new WebWorkerSimulation(
+                this.config.simulation,
+                this.handleSimulationUpdate.bind(this),
+            );
         }
-
-        // const buffer = await this.simulation.getRenderBuffer();
-        // this.renderParticles = ArrayOfBufferBackedObjects(buffer, RenderParticleSchema);
-
 
         await this.simulation.start();
         this.fpsManager.runCallback();
@@ -118,25 +108,28 @@ export class Engine extends BaseEventHandler<WorkerMessage> {
         return this.fpsManager.isRunning();
     }
 
-    private draw(particles?:DecodedBuffer<typeof RenderParticleSchema>[]): void {
+    private draw(): void {
         this.stats?.begin();
-        for (const renderer of this.renderers) {
-            renderer.draw(this.world,particles ?? this.renderParticles);
-        }
+        this.renderer.render(this.world);
         this.stats?.end();
+
+        this.world.dirtyChunks.length = 0;
+        this.world.dirtyParticles.length = 0;
     }
 
-    private handleSimulationUpdate(buffer:ArrayBuffer): void {
-        if (stop) {
-            return;
+    private handleSimulationUpdate({newBuffers, dirtyChunks}: UpdateData): void {
+        const chunkSize = Math.pow(this.config.simulation.chunks.size, 2);
+        const schema = ChunkSchema(chunkSize);
+        for (const buffer of newBuffers) {
+            const chunk = BufferBackedObject(buffer, schema);
+            this.world.chunks[chunk.id] = chunk;
+            dirtyChunks.push(chunk.id);
         }
 
-        stop = true;
-
-        const particles = ArrayOfBufferBackedObjects(buffer, RenderParticleSchema);
-
-        console.log('Refresh canvas?',particles.length);
-
-        this.draw(particles);
+        for (const dirtyChunk of dirtyChunks) {
+            if (!this.world.dirtyChunks.includes(dirtyChunk)) {
+                this.world.dirtyChunks.push(dirtyChunk);
+            }
+        }
     }
 }

@@ -1,11 +1,4 @@
-import {RGBATuple} from "../../../Utility/Color.ts";
+import {DecodedBuffer} from "../../../Utility/BufferBackedObject.ts";
+import {ParticleDescriptor} from "../../Schema/ParticleSchema.ts";
 
-export type RendererParticle = {
-    id: number,
-    dirty: boolean,
-    ephemeral: boolean,
-    color: {
-        hex: string,
-        tuple: RGBATuple
-    }
-}
+export type RendererParticle = Readonly<DecodedBuffer<ParticleDescriptor>>;

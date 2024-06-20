@@ -5,7 +5,9 @@ export type SimulationConfig = {
     imageDataMode?: boolean,
     startOnInit?: boolean,
     outerBounds: GridDimensions,
-    chunks: {
-        size: number,
-    }
+    chunks: ChunkConfig
 }
+
+export type ChunkConfig = {
+    size: number,
+};

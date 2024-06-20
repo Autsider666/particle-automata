@@ -3,6 +3,6 @@ import {RenderMode} from "../Type/RenderMode.ts";
 
 export type  RendererConfig = {
     modes: RenderMode[],
-    initialScreenBounds: ViewportDimensions,
+    viewport: ViewportDimensions,
     particleSize: number,
 }

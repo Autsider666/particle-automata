@@ -64,7 +64,7 @@ export function ArrayOfBufferBackedObjects<T extends Descriptors>(
         ...descriptors,
     };
     for (const [name, descriptor] of Object.entries(extendedDescriptors)) {
-      const offset= nextAlign(stride, descriptor.align ?? 1);
+        const offset = nextAlign(stride, descriptor.align ?? 1);
         extendedDescriptors[name] = {
             ...descriptor,
             offset,
@@ -100,6 +100,7 @@ export function ArrayOfBufferBackedObjects<T extends Descriptors>(
                 if (typeof prop === "function") {
                     prop = prop.bind(proxy);
                 }
+
                 return prop;
             }
             const idx = parseInt(propName);
@@ -109,6 +110,7 @@ export function ArrayOfBufferBackedObjects<T extends Descriptors>(
             if (idx >= target.length) {
                 return undefined;
             }
+
             // If there is a hole at the given index, we need to create a new value
             // there that has the correct getter and setter functions.
             if (!target[idx]) {
@@ -133,6 +135,7 @@ export function ArrayOfBufferBackedObjects<T extends Descriptors>(
                 }
                 Object.freeze(target[idx]);
             }
+
             return target[idx];
         },
     });
@@ -294,6 +297,15 @@ export function BigUint64({
             dataView.getBigUint64(byteOffset, littleEndian),
         set: (dataView, byteOffset, value) =>
             dataView.setBigUint64(byteOffset, value, littleEndian),
+    };
+}
+
+export function Boolean(): Descriptor<boolean> {
+    return {
+        align: 1,
+        size: 1,
+        get: (dataView, byteOffset) => dataView.getUint8(byteOffset) !== 0,
+        set: (dataView, byteOffset, value) => dataView.setUint8(byteOffset, value ? 1 : 0),
     };
 }
 

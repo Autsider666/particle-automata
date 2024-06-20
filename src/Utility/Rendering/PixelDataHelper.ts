@@ -1,33 +1,47 @@
+import {GridCoordinate} from "../../Engine/Type/Coordinate.ts";
 import {RGBATuple} from "../Color.ts";
-import {BoundingBox} from "../Excalibur/BoundingBox.ts";
-import {Coordinate, GridDimensions} from "../Type/Dimensional.ts";
+import {ViewportDimensions} from "../Type/Dimensional.ts";
 import {RenderHelper} from "./RenderHelper.ts";
 
-export class PixelDataHelper<C extends Coordinate = Coordinate> extends RenderHelper<C> {
+export class PixelDataHelper extends RenderHelper {
     public pixelData!: Uint8Array; //TODO should be better I guess?
 
     constructor(
-        dimensions: GridDimensions,
+        dimensions: ViewportDimensions,
         particleSize: number,
+        private readonly useAlpha: boolean = false
     ) {
-        super(dimensions, particleSize, 3);
+        super(dimensions, particleSize, useAlpha ? 4 : 3);
         this.resize(dimensions);
     }
 
-    resize({width, height}: GridDimensions): void {
-        this.width = width * this.particleSize;
-        this.height = height * this.particleSize;
+    resize(viewPort: ViewportDimensions, defaultColor?: RGBATuple): void {
+        super.resize(viewPort);
 
         this.pixelData = new Uint8Array(
-            this.width * this.height * this.bytesPerPixel
-        ).fill(0);
+            this.viewPort.width * this.viewPort.height * this.bytesPerPixel
+        );
 
-        this.gridBounds = BoundingBox.fromDimension<C>(width - 1, height - 1);
+        if (defaultColor) {
+            for (let x = 0; x < this.grid.width; x++) {
+                for (let y = 0; y < this.grid.height; y++) {
+                    this.fillRectangle(
+                        {x, y} as GridCoordinate,
+                        this.particleSize,
+                        this.particleSize,
+                        defaultColor,
+                    );
+                }
+            }
+        }
     }
 
     protected handlePixel(index: number, color: RGBATuple): void {
         this.pixelData[index] = color[0]; // Red
         this.pixelData[index + 1] = color[1]; // Green
         this.pixelData[index + 2] = color[2]; // Blue
+        if (this.useAlpha) {
+            this.pixelData[index + 3] = color[3]; // Alpha
+        }
     }
 }

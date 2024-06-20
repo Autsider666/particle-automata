@@ -3,7 +3,7 @@ import {Chunk} from "../Grid/Chunk.ts";
 import {World} from "../Grid/World.ts";
 import {Particle} from "../Particle/Particle.ts";
 import {ParticleType} from "../Particle/ParticleType.ts";
-import {WorldCoordinate} from "../Type/Coordinate.ts";
+import {GridCoordinate} from "../Type/Coordinate.ts";
 import {BehaviourManager} from "./BehaviourManager.ts";
 
 type ObviousParticleData = {
@@ -50,13 +50,13 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
         super(world, chunk);
     }
 
-    updateParticle(particle: ObviousParticle, coordinate: WorldCoordinate): void {
+    updateParticle(particle: ObviousParticle, coordinate: GridCoordinate): void {
         if (particle.ephemeral) { //TODO reset displacement?
             return;
         }
 
-        if (particle.density !== undefined && particle.immovable !== true) {
-            if (particle.fluidity) {
+        if (particle.density !== undefined && !particle.immovable) {
+            if (particle.fluid) {
                 this.updateFluid(particle, coordinate);
             } else {
                 this.updateOther(particle, coordinate);
@@ -68,7 +68,7 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
         }
     }
 
-    private updateFluid(particle: ObviousParticle, coordinate: WorldCoordinate): void {
+    private updateFluid(particle: ObviousParticle, coordinate: GridCoordinate): void {
         let i: number = -1;
         for (const {dX, dY} of this.updateList) {
             const moved = this.tryGridPosition(
@@ -99,7 +99,7 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
         this.shuffleUpdateList(true);
     }
 
-    private updateOther(particle: ObviousParticle, coordinate: WorldCoordinate): void {
+    private updateOther(particle: ObviousParticle, coordinate: GridCoordinate): void {
         let i = 0;
         for (const updateDirection of this.updateList) {
             if (this.tryGridPosition(particle, coordinate, updateDirection)) {
@@ -117,7 +117,7 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
         this.shuffleUpdateList(false);
     }
 
-    private tryGridPosition(particle: ObviousParticle, coordinate: WorldCoordinate, direction: Direction, trySwap: boolean = true): boolean {
+    private tryGridPosition(particle: ObviousParticle, coordinate: GridCoordinate, direction: Direction, trySwap: boolean = true): boolean {
         if (!this.canMoveInDirection(coordinate, direction)) {
             return false;
         }
@@ -175,7 +175,7 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
         return false;
     }
 
-    private displaceParticle(particle: ObviousParticle, coordinate: WorldCoordinate, options: DirectionalOptions): boolean {
+    private displaceParticle(particle: ObviousParticle, coordinate: GridCoordinate, options: DirectionalOptions): boolean {
         if (particle.hasBeenDisplaced) {
             return false;
         }
@@ -211,7 +211,7 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
         return particle.density ? particle.density < this.airDensity : true;
     }
 
-    private canMoveInDirection(coordinate: WorldCoordinate, direction: Direction): boolean {
+    private canMoveInDirection(coordinate: GridCoordinate, direction: Direction): boolean {
         return this.isValidCoordinate(
             Traversal.getDestinationCoordinate(coordinate, direction)
         );

@@ -508,7 +508,7 @@ const fragmentShader = `
     }
 `;
 
-export function begin(rootElement:HTMLElement) {
+export function begin(rootElement: HTMLElement) {
     const canvas = document.createElement('canvas');
     canvas.classList.add('web-sand');
     rootElement.appendChild(canvas);
@@ -536,9 +536,9 @@ export function begin(rootElement:HTMLElement) {
     // const bufferHeight = 128;
     // const bufferWidth = nextPow2(canvas.width);
     // const bufferHeight = nextPow2(canvas.height);
-    const particleSize = URLParams.get('particleSize',"number") ?? 1;
-    const bufferWidth = Math.round(canvas.width/particleSize);
-    const bufferHeight = Math.round(canvas.height/particleSize);
+    const particleSize = URLParams.get('particleSize', "number") ?? 1;
+    const bufferWidth = Math.round(canvas.width / particleSize);
+    const bufferHeight = Math.round(canvas.height / particleSize);
     // const bufferWidth = canvas.width;
     // const bufferHeight = canvas.height;
 

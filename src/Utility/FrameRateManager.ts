@@ -32,7 +32,7 @@ export class FrameRateManager {
         this.paused = true;
     }
 
-    public isRunning():boolean {
+    public isRunning(): boolean {
         return !this.paused;
     }
 

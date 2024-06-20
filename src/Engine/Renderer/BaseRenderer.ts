@@ -1,7 +1,6 @@
-import {DecodedBuffer} from "../../Utility/BufferBackedObject.ts";
-import {GridDimensions} from "../../Utility/Type/Dimensional.ts";
+import {ViewportDimensions} from "../../Utility/Type/Dimensional.ts";
 import {RendererConfig} from "../Config/RendererConfig.ts";
-import {RenderParticleSchema} from "../Schema/RenderParticleSchema.ts";
+import {RendererInterface} from "./RendererInterface.ts";
 import {RendererWorld} from "./Type/RendererWorld.ts";
 
 export type RendererProps = {
@@ -9,7 +8,7 @@ export type RendererProps = {
     config: RendererConfig,
 }
 
-export abstract class Renderer {
+export abstract class BaseRenderer implements RendererInterface {
     protected firstDraw: boolean = true;
     protected height: number;
     protected width: number;
@@ -22,13 +21,18 @@ export abstract class Renderer {
                 }: RendererProps) {
         this.canvas = canvas;
         this.particleSize = config.particleSize;
-        this.height = config.initialScreenBounds.height;
-        this.width = config.initialScreenBounds.width;
+        this.height = config.viewport.height;
+        this.width = config.viewport.width;
     }
 
-    abstract draw(world: RendererWorld, renderParticles: DecodedBuffer<typeof RenderParticleSchema>[]): void;
+    public render(world: RendererWorld): void {
+        this.draw(world);
+        this.firstDraw = false;
+    }
 
-    resize({height, width}: GridDimensions): void {
+    protected abstract draw(world: RendererWorld): void;
+
+    resize({height, width}: ViewportDimensions): void {
         this.firstDraw = true;
         this.height = height;
         this.width = width;

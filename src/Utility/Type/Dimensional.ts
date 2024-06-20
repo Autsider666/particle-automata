@@ -1,3 +1,4 @@
+import {onWorker} from "../OnWorker.ts";
 import {Distinct} from "./Distinct.ts";
 
 export type Coordinate = { x: number, y: number };
@@ -17,10 +18,21 @@ export class Traversal {
         } as C;
     }
 
-    static getGridDimensions({width, height}: Dimensions, particleSize: number): GridDimensions {
+    static getGridDimensions({width, height}: ViewportDimensions, particleSize: number): GridDimensions {
         return {
             height: Math.round(height / particleSize),
             width: Math.round(width / particleSize),
         } as GridDimensions;
+    }
+
+    static getViewportDimensions({width, height}: Dimensions): ViewportDimensions {
+        if (onWorker()) {
+            throw new Error('Can\'t calculate viewport on worker');
+        }
+
+        return {
+            height: Math.round(height),
+            width: Math.round(width),
+        } as ViewportDimensions;
     }
 }

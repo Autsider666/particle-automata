@@ -1,21 +1,22 @@
 import type {Coordinate, Dimensions} from "./Type/Dimensional.ts";
 
-type DefaultValueGenerator<I> = (index: number) => I;
+export type DefaultValueGenerator<I> = (index: number) => I;
 
 export class Array2D<I, C extends Coordinate = Coordinate> {
-    private store: I[];
-    private readonly iterateSet = new Set<I>();
-    private readonly changedIndexes = new Set<number>();
-    private readonly defaultValue: DefaultValueGenerator<I>;
+    protected store: I[];
+    protected readonly iterateSet = new Set<I>();
+    protected readonly changedIndexes = new Set<number>();
+    protected readonly defaultValue: DefaultValueGenerator<I>;
 
-    private readonly arrayWidth: number;
-    private readonly arrayHeight: number;
-    private readonly length: number;
+    protected readonly arrayWidth: number;
+    protected readonly arrayHeight: number;
+    protected readonly length: number;
 
     constructor(
         {width, height}: Dimensions,
         defaultValue: DefaultValueGenerator<I>,
-        private readonly offset: Coordinate,
+        protected readonly offset: Coordinate,
+        existingStore?: I[],
     ) {
         this.arrayWidth = width;
         this.arrayHeight = height;
@@ -28,14 +29,14 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
             return item;
         };
 
-        this.store = [...Array<I>(this.length)].map((_, index) => this.defaultValue(index));
+        this.store = existingStore ?? [...Array<I>(this.length)].map((_, index) => this.defaultValue(index));
     }
 
-    public clear(): void {
-        this.changedIndexes.clear();
-        this.iterateSet.clear();
-        this.store = [...Array<I>(this.length)].map((_, index) => this.defaultValue(index));
-    }
+    // public clear(): void {
+    //     this.changedIndexes.clear();
+    //     this.iterateSet.clear();
+    //     this.store = [...Array<I>(this.length)].map((_, index) => this.defaultValue(index));
+    // }
 
     public get<P extends I = I>(coordinate: C): P {
         this.validateCoordinate(coordinate);
@@ -48,7 +49,7 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
         return item as P;
     }
 
-    private getByIndex(index: number): I {
+    protected getByIndex(index: number): I {
         if (!this.isValidIndex(index)) {
             throw new Error('Invalid index');
         }
@@ -66,7 +67,7 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
         this.setIndex(index, item);
     }
 
-    private setIndex(index: number, item: I): boolean {
+    protected setIndex(index: number, item: I): boolean {
         if (!this.isValidIndex(index)) {
             return false;
         }
@@ -87,9 +88,13 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
         }
     }
 
-    iterateChanges(callback: (item: I, coordinate: C) => void): void {
+    iterateChanges(callback: (props: { item: I, coordinate: C, index: number }) => void): void {
         for (const index of this.changedIndexes) {
-            callback(this.getByIndex(index), this.toCoordinate(index));
+            callback({
+                item: this.getByIndex(index),
+                coordinate: this.toCoordinate(index),
+                index,
+            });
         }
     }
 
@@ -101,7 +106,7 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
         this.changedIndexes.clear();
     }
 
-    // private toCoordinate(index: number): C {
+    // protected toCoordinate(index: number): C {
     //     const x = index % this.arrayWidth + this.offset.x;
     //     const y = (index - x) / this.arrayWidth + this.offset.x;
     //     return {x, y} as C;
@@ -113,6 +118,12 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
         return this.toIndex(coordinate);
     }
 
+    public getCoordinate(index: number): Readonly<C> {
+        this.isValidIndex(index);
+
+        return this.toCoordinate(index);
+    }
+
     containsCoordinate({x, y}: C): boolean {
         const dX = x - this.offset.x;
         const dY = y - this.offset.y;
@@ -120,21 +131,21 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
         return dX >= 0 && dX < this.arrayWidth && dY >= 0 && dY < this.arrayHeight;
     }
 
-    private toIndex({x, y}: Readonly<C>): number {
+    protected toIndex({x, y}: Readonly<C>): number {
         return (y - this.offset.y) * this.arrayWidth + (x - this.offset.x);
     }
 
-    private toCoordinate(index: number): C {
+    protected toCoordinate(index: number): C {
         const x = index % this.arrayWidth;
         const y = (index - x) / this.arrayWidth;
         return {x: x + this.offset.x, y: y + this.offset.y} as C;
     }
 
-    private isValidIndex(index: number): boolean {
+    protected isValidIndex(index: number): boolean {
         return index >= 0 && index < this.length;
     }
 
-    private validateCoordinate(coordinate: Readonly<C>): void {
+    protected validateCoordinate(coordinate: Readonly<C>): void {
         if (this.containsCoordinate(coordinate)) {
             return;
         }

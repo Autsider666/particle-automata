@@ -1,4 +1,4 @@
-import {Traversal, ViewportDimensions} from "../../Utility/Type/Dimensional.ts";
+import {Traversal} from "../../Utility/Type/Dimensional.ts";
 import {URLParams} from "../../Utility/URLParams.ts";
 import {RenderMode} from "../Type/RenderMode.ts";
 import {RendererConfig} from "./RendererConfig.ts";
@@ -17,16 +17,16 @@ export class EngineConfigBuilder {
 
         const renderModes: RenderMode[] = [];
 
-        const modes = URLParams.get('renderMode', "string") ?? URLParams.get('mode', "string") ?? 'draw';
+        const modes = URLParams.get('renderMode', "string") ?? URLParams.get('mode', "string") ?? 'webgl';
 
         for (const mode of modes.split(',')) {
-            switch (mode) {
+            switch (mode.toLowerCase()) {
                 case 'debug':
                 case 'draw':
                     renderModes.push(RenderMode.Draw);
                     break;
                 case 'image':
-                case 'imageData':
+                case 'imagedata':
                     renderModes.push(RenderMode.ImageData);
                     break;
                 case 'gl':
@@ -47,13 +47,22 @@ export class EngineConfigBuilder {
 
         const particleSize = URLParams.get('particleSize', "number") ?? 5;
 
-        const outerBounds = Traversal.getGridDimensions(
+        const width = URLParams.get('width', "number") ?? window.outerWidth;
+        const height = URLParams.get('height', "number") ?? window.innerHeight;
+
+        const viewport = Traversal.getViewportDimensions(
             {
-                width: URLParams.get('width', "number") ?? window.outerWidth,
-                height: URLParams.get('height', "number") ?? window.innerHeight,
-            },
+                width: width ?? window.outerWidth,
+                height: height ?? window.innerHeight,
+            }
+        );
+
+        const outerBounds = Traversal.getGridDimensions(
+            viewport,
             particleSize
         );
+
+        const chunkSize = URLParams.get('chunkSize', "number") ?? 10;
 
         return {
             useWorker: URLParams.get('worker', 'boolean') ?? true,
@@ -63,12 +72,12 @@ export class EngineConfigBuilder {
                 startOnInit: autoStartMode,
                 outerBounds,
                 chunks: {
-                    size: URLParams.get('chunkSize', "number") ?? 10,
+                    size: chunkSize,
                 },
             },
             renderer: {
                 modes: renderModes,
-                initialScreenBounds: {width: outerWidth, height: window.innerHeight} as ViewportDimensions,
+                viewport: viewport,
                 particleSize,
             },
         };

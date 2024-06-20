@@ -1,10 +1,12 @@
 import * as twgl from "twgl.js";
 import {DecodedBuffer} from "../../Utility/BufferBackedObject.ts";
+import {RGBATuple} from "../../Utility/Color.ts";
 import {PixelDataHelper} from "../../Utility/Rendering/PixelDataHelper.ts";
-import {GridDimensions, Traversal} from "../../Utility/Type/Dimensional.ts";
-import {RenderParticleSchema} from "../Schema/RenderParticleSchema.ts";
-import {WorldCoordinate} from "../Type/Coordinate.ts";
-import {Renderer, RendererProps} from "./Renderer.ts";
+import {ViewportDimensions} from "../../Utility/Type/Dimensional.ts";
+import {ParticleType} from "../Particle/ParticleType.ts";
+import {ParticleSchema} from "../Schema/ParticleSchema.ts";
+import {GridCoordinate} from "../Type/Coordinate.ts";
+import {BaseRenderer, RendererProps} from "./BaseRenderer.ts";
 import {RendererWorld} from "./Type/RendererWorld.ts";
 
 const vertexShader = `
@@ -28,8 +30,8 @@ const fragmentShader = `
     }
 `;
 
-export class WebGLRenderer extends Renderer {
-    private pixels: PixelDataHelper<WorldCoordinate>;
+export class WebGLRenderer extends BaseRenderer {
+    private pixels: PixelDataHelper;
     private texture!: WebGLTexture;
     private programInfo!: twgl.ProgramInfo;
     private bufferInfo!: twgl.BufferInfo;
@@ -37,19 +39,21 @@ export class WebGLRenderer extends Renderer {
     private frame: number = 0;
 
     private readonly gl: WebGLRenderingContext;
+    private readonly colorMode: number;
+    private readonly backgroundColor: RGBATuple = ParticleType.Air.colorTuple ?? [0, 0, 0, 1];
 
-    constructor(props: RendererProps) {
+    constructor(props: RendererProps, useAlpha: boolean = false) {
         super(props);
         const {config, canvas} = props;
 
-        const gridDimensions = Traversal.getGridDimensions(config.initialScreenBounds,this.particleSize);
         this.pixels = new PixelDataHelper(
-            gridDimensions,
+            config.viewport,
             this.particleSize,
+            useAlpha
         );
 
         const glContext = canvas.getContext('webgl', {
-            alpha: false,
+            alpha: useAlpha,
             antialias: false,
             depth: false,
             stencil: false,
@@ -64,15 +68,16 @@ export class WebGLRenderer extends Renderer {
             attribPrefix: "a_",
         });
 
+        this.colorMode = useAlpha ? this.gl.RGBA : this.gl.RGB;
         this.gl.enable(this.gl.CULL_FACE);
-        this.gl.clearColor(0, 0, 0, 1);
+        this.gl.clearColor(...this.backgroundColor);
 
-        this.resize(gridDimensions);
+        this.resize(config.viewport);
     }
 
-    resize(dimensions: GridDimensions): void {
+    resize(dimensions: ViewportDimensions): void {
         super.resize(dimensions);
-        this.pixels.resize(dimensions);
+        this.pixels.resize(dimensions, this.backgroundColor);
 
         this.texture = this.newTexture(this.gl, this.pixels.pixelData);
         this.programInfo = twgl.createProgramInfo(this.gl, [
@@ -96,21 +101,35 @@ export class WebGLRenderer extends Renderer {
         });
     }
 
-    draw(_world: RendererWorld, renderParticles: DecodedBuffer<typeof RenderParticleSchema>[]): void {
-        if (this.firstDraw) {
-            this.firstDraw = false; // TODO generalize this away?
+    protected draw({particles, dirtyParticles, chunks, dirtyChunks}: RendererWorld): void {
+        for (const dirtyParticle of dirtyParticles) {
+            this.handleParticle(particles[dirtyParticle]);
         }
 
-        const particleCount = renderParticles.length;
-        for (let i = 0; i < particleCount; i++) {
-            this.handleParticle(renderParticles[i]);
+        if (this.firstDraw) {
+            for (const chunk of chunks) {
+                for (const particle of chunk.particles) {
+                    this.handleParticle(particle);
+                }
+            }
+        } else {
+            if (dirtyChunks.length === 0) {
+                return;
+            }
+
+            for (const index of dirtyChunks) {
+                for (const particle of chunks[index].particles) {
+                    this.handleParticle(particle);
+                }
+            }
         }
+
 
         // Update texture
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
         this.gl.texSubImage2D(
             this.gl.TEXTURE_2D, 0, 0, 0, this.width, this.height,
-            this.gl.RGB, this.gl.UNSIGNED_BYTE, this.pixels.pixelData
+            this.colorMode, this.gl.UNSIGNED_BYTE, this.pixels.pixelData
         );
         // Render
         twgl.setBuffersAndAttributes(this.gl, this.programInfo, this.bufferInfo);
@@ -124,8 +143,8 @@ export class WebGLRenderer extends Renderer {
             width: this.width,
             height: this.height,
             minMag: gl.NEAREST,
-            internalFormat: gl.RGB,
-            format: gl.RGB,
+            internalFormat: this.colorMode,
+            format: this.colorMode,
             wrap: gl.CLAMP_TO_EDGE,
             src: pixels,
         });
@@ -146,17 +165,17 @@ export class WebGLRenderer extends Renderer {
     //     }
     // }
 
-    private handleParticle(particle:DecodedBuffer<typeof RenderParticleSchema>): void {
+    private handleParticle(particle: DecodedBuffer<typeof ParticleSchema>): void {
         const coordinate = particle.coordinate;
         this.pixels.fillRectangle(
-            {x:coordinate.x, y:coordinate.y} as WorldCoordinate,
+            {x: coordinate.x, y: coordinate.y} as GridCoordinate,
             this.particleSize,
             this.particleSize,
             [
                 particle.color.red,
                 particle.color.green,
                 particle.color.blue,
-                0,
+                particle.color.alpha,
             ],
         );
     }

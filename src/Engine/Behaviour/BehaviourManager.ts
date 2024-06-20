@@ -2,7 +2,7 @@ import {Direction, Traversal} from "../../Utility/Type/Dimensional.ts";
 import {Chunk} from "../Grid/Chunk.ts";
 import {World} from "../Grid/World.ts";
 import {Particle} from "../Particle/Particle.ts";
-import {WorldCoordinate} from "../Type/Coordinate.ts";
+import {GridCoordinate} from "../Type/Coordinate.ts";
 
 type DirtyFlag = {
     dirty?: boolean,
@@ -48,9 +48,9 @@ export abstract class BehaviourManager {
         });
     }
 
-    abstract updateParticle(particle: DirtyParticle, coordinate: WorldCoordinate): void;
+    abstract updateParticle(particle: DirtyParticle, coordinate: GridCoordinate): void;
 
-    getParticle<P extends Particle = Particle>(coordinate: WorldCoordinate): P {
+    getParticle<P extends Particle = Particle>(coordinate: GridCoordinate): P {
         if (this.chunk.containsCoordinate(coordinate)) {
             return this.chunk.getParticle(coordinate) as P;
         }
@@ -58,7 +58,7 @@ export abstract class BehaviourManager {
         return this.world.getParticle(coordinate) as P;
     }
 
-    setParticle(coordinate: WorldCoordinate, particle: Particle): void {
+    setParticle(coordinate: GridCoordinate, particle: Particle): void {
         if (this.chunk.containsCoordinate(coordinate)) {
             this.chunk.setParticle(coordinate, particle);
         } else {
@@ -66,7 +66,7 @@ export abstract class BehaviourManager {
         }
     }
 
-    moveParticle(coordinate: WorldCoordinate, direction: Direction): boolean {
+    moveParticle(coordinate: GridCoordinate, direction: Direction): boolean {
         const destination = Traversal.getDestinationCoordinate(coordinate, direction);
         if (this.chunk.containsCoordinate(coordinate) && this.chunk.containsCoordinate(destination)) {
             return this.chunk.moveParticle<DirtyParticle>(this.chunk, coordinate, destination).dirty = true;
@@ -75,11 +75,11 @@ export abstract class BehaviourManager {
         return this.world.moveParticle<DirtyParticle>(coordinate, direction);
     }
 
-    wakeChunk(coordinate: WorldCoordinate): void {
+    wakeChunk(coordinate: GridCoordinate): void {
         this.world.wakeChunk(coordinate);
     }
 
-    isValidCoordinate(coordinate: WorldCoordinate): boolean {
+    isValidCoordinate(coordinate: GridCoordinate): boolean {
         if (this.chunk.containsCoordinate(coordinate)) {
             return this.chunk.isValidCoordinate(coordinate);
         }

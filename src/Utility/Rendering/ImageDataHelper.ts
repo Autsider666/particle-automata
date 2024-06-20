@@ -1,30 +1,26 @@
 import {RGBATuple} from "../Color.ts";
-import {BoundingBox} from "../Excalibur/BoundingBox.ts";
-import {Coordinate, GridDimensions} from "../Type/Dimensional.ts";
+import {ViewportDimensions} from "../Type/Dimensional.ts";
 import {RenderHelper} from "./RenderHelper.ts";
 
-export class ImageDataHelper<C extends Coordinate = Coordinate> extends RenderHelper<C> {
+export class ImageDataHelper extends RenderHelper {
     private imageData!: ImageData;
 
     constructor(
-        dimensions: GridDimensions,
+        dimensions: ViewportDimensions,
         particleSize: number,
     ) {
         super(dimensions, particleSize, 4);
         this.resize(dimensions);
     }
 
-    resize({width, height}: GridDimensions): void {
-        this.width = width * this.particleSize;
-        this.height = height * this.particleSize;
+    resize(viewPort: ViewportDimensions): void {
+        super.resize(viewPort);
 
-        this.imageData = new ImageData(this.width, this.height);
+        this.imageData = new ImageData(this.viewPort.width, this.viewPort.height);
 
         for (let i = 0; i < this.imageData.data.length; i += this.bytesPerPixel) {
             this.imageData.data[i + 3] = 255;
         }
-
-        this.gridBounds = BoundingBox.fromDimension<C>(width - 1, height - 1);
     }
 
     public applyImageData(ctx: CanvasImageData): void {

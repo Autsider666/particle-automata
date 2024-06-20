@@ -31,7 +31,7 @@ export class Color {
         lightness = Math.max(0, Math.min(100, lightness));
         const alpha = Math.min(Math.max(a + this.randomByConfig(alphaModifier), 0), 1);
 
-        return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha.toFixed(1)})`;
+        return `hsla(${hue.toFixed(0)}, ${saturation.toFixed(0)}%, ${lightness.toFixed(0)}%, ${alpha.toFixed(1)})`;
     }
 
     static varyColorTuple(color: string, { //FIXME can't handle #FFFFFF, gives NaN for hue and saturation
@@ -116,7 +116,7 @@ export class Color {
             b = this.hue2rgb(p, q, h - 1 / 3);
         }
 
-        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), a];
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), Math.round(a * 255)];
     }
 
     private static hue2rgb(p: number, q: number, t: number): number {

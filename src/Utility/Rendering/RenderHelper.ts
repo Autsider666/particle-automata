@@ -1,56 +1,57 @@
+import {GridCoordinate, ViewportCoordinate} from "../../Engine/Type/Coordinate.ts";
 import {RGBATuple} from "../Color.ts";
 import {BoundingBox} from "../Excalibur/BoundingBox.ts";
-import {Coordinate, GridDimensions} from "../Type/Dimensional.ts";
+import {GridDimensions, Traversal, ViewportDimensions} from "../Type/Dimensional.ts";
 
-export abstract class RenderHelper<C extends Coordinate = Coordinate> {
-    protected gridBounds!: BoundingBox<C>;
-    protected width: number;
-    protected height: number;
+export abstract class RenderHelper {
+    protected gridBounds!: BoundingBox<GridCoordinate>;
+    protected grid: GridDimensions;
 
-    constructor(
-        {width, height}: GridDimensions,
+    protected constructor(
+        protected viewPort: ViewportDimensions,
         protected readonly particleSize: number,
         protected readonly bytesPerPixel: number = 4
     ) {
-        this.gridBounds = BoundingBox.fromDimension<C>(width - 1, height - 1);
-        this.width = width * this.particleSize;
-        this.height = height * this.particleSize;
+        this.grid = Traversal.getGridDimensions(viewPort, particleSize);
+    }
+
+    public resize(viewPort: ViewportDimensions): void {
+        this.viewPort = viewPort;
+
+        this.grid = Traversal.getGridDimensions(viewPort, this.particleSize);
+
+        this.gridBounds = BoundingBox.fromDimension<GridCoordinate>(this.grid.width - 1, this.grid.height - 1);
+
     }
 
     //TODO Cache rectangles?
-    public fillRectangle(coordinate: C, width: number, height: number, color: RGBATuple): void {
-        if (!this.gridBounds.containsCoordinate(coordinate) || color.filter(value => value !== 0).length === 0) {
+    public fillRectangle(coordinate: GridCoordinate, width: number, height: number, color: RGBATuple): void {
+        if (!this.gridBounds.containsCoordinate(coordinate)) {
             return;
-        }
-        if (coordinate.x !== 0) {
-            console.log(this.gridBounds, coordinate, color);
         }
 
         const dX = coordinate.x * this.particleSize;
         const dY = coordinate.y * this.particleSize;
         for (let y = dY; y < dY + height; y++) {
             for (let x = dX; x < dX + width; x++) {
-                this.fillPixel({x, y}, color);
+                this.fillPixel({x, y} as ViewportCoordinate, color);
             }
         }
     }
 
-    protected getIndexForPixelLocation({x, y}: Coordinate): number {
-        return (y * this.width + x) * this.bytesPerPixel;
+    protected getIndexForPixelLocation({x, y}: ViewportCoordinate): number {
+        return (y * this.viewPort.width + x) * this.bytesPerPixel;
     }
 
-    protected getPixelLocationForIndex(index: number): Coordinate {
+    protected getPixelLocationForIndex(index: number): GridCoordinate {
         const pixelIdx = Math.floor(index / this.bytesPerPixel);
-        const y = Math.floor(pixelIdx / this.width);
-        const x = pixelIdx % this.width;
-        return {x: x, y: y};
+        const y = Math.floor(pixelIdx / this.viewPort.width);
+        const x = pixelIdx % this.viewPort.width;
+        return {x: x, y: y} as GridCoordinate;
     }
 
-    private fillPixel(coordinate: Coordinate, color: RGBATuple): void {
-        const idx = this.getIndexForPixelLocation(coordinate);
-        for (let i = 0; i < this.bytesPerPixel; i++) {
-            this.handlePixel(idx, color);
-        }
+    private fillPixel(coordinate: ViewportCoordinate, color: RGBATuple): void {
+        this.handlePixel(this.getIndexForPixelLocation(coordinate), color); //FIXME is iteration need?
     }
 
     protected abstract handlePixel(index: number, color: RGBATuple): void;
