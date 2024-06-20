@@ -1,5 +1,6 @@
 import {ViewportDimensions} from "../../Utility/Type/Dimensional.ts";
 import {RendererConfig} from "../Config/RendererConfig.ts";
+import {World} from "../Grid/World.ts";
 import {RendererInterface} from "./RendererInterface.ts";
 import {RendererWorld} from "./Type/RendererWorld.ts";
 
@@ -25,12 +26,12 @@ export abstract class BaseRenderer implements RendererInterface {
         this.width = config.viewport.width;
     }
 
-    public render(world: RendererWorld): void {
-        this.draw(world);
+    public render(world: RendererWorld, realWorld?:World): void {
+        this.draw(world, realWorld);
         this.firstDraw = false;
     }
 
-    protected abstract draw(world: RendererWorld): void;
+    protected abstract draw(world: RendererWorld, realWorld?:World): void;
 
     resize({height, width}: ViewportDimensions): void {
         this.firstDraw = true;

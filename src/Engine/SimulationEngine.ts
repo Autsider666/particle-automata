@@ -1,5 +1,4 @@
 import * as Comlink from "comlink";
-import {BufferBackedObject} from "../Utility/BufferBackedObject.ts";
 import {BaseEventHandler} from "../Utility/Excalibur/BaseEventHandler.ts";
 import {FrameRateManager} from "../Utility/FrameRateManager.ts";
 import Stats from "../Utility/Stats/Stats.ts";
@@ -8,10 +7,8 @@ import {EngineConfig} from "./Config/EngineConfig.ts";
 import {ParticleIdentifier} from "./Particle/ParticleType.ts";
 import {DynamicRenderer} from "./Renderer/DynamicRenderer.ts";
 import {RendererInterface} from "./Renderer/RendererInterface.ts";
-import {RendererWorld} from "./Renderer/Type/RendererWorld.ts";
-import {ChunkSchema} from "./Schema/ChunkSchema.ts";
 import {SimulationEvent} from "./Simulation/SimulationInterface.ts";
-import {UpdateData, WebWorkerSimulation} from "./Simulation/WebWorkerSimulation.ts";
+import {WebWorkerSimulation} from "./Simulation/WebWorkerSimulation.ts";
 import Worker from "./Simulation/WebWorkerSimulation.ts?worker";
 import {GridCoordinate, ViewportCoordinate} from "./Type/Coordinate.ts";
 import {WorkerMessage} from "./Type/WorkerMessage.ts";
@@ -34,20 +31,12 @@ export class SimulationEngine extends BaseEventHandler<WorkerMessage & Simulatio
     private fpsManager: FrameRateManager;
     private renderer: RendererInterface;
     private readonly stats?: Stats;
-    private readonly world: RendererWorld;
 
     constructor(
-        rootElement: HTMLElement,
+        private readonly rootElement: HTMLElement,
         private readonly config: EngineConfig,
     ) {
         super();
-
-        this.world = {
-            chunks: [],
-            dirtyChunks: [],
-            dirtyParticles: [],
-            particles: [],
-        };
 
         this.renderer = new DynamicRenderer(config.renderer, rootElement);
 
@@ -97,18 +86,26 @@ export class SimulationEngine extends BaseEventHandler<WorkerMessage & Simulatio
             throw new Error('Already initialized');
         }
 
+        const canvas = document.createElement('canvas');
+
+        canvas.width = this.config.renderer.viewport.width;
+        canvas.height = this.config.renderer.viewport.height;
+        this.rootElement.appendChild(canvas);
+        const offscreen = canvas.transferControlToOffscreen();
         if (this.config.useWorker) {
             const Simulation = Comlink.wrap<WebWorkerSimulation>(new Worker());
 
             // @ts-expect-error Does not believe Simulation has a constructor.
             this.simulation = await new Simulation(
-                this.config.simulation,
+                this.config,
                 Comlink.proxy(this.handleSimulationUpdate.bind(this)),
+                Comlink.transfer(offscreen,[offscreen]),
             );
         } else {
             this.simulation = new WebWorkerSimulation(
-                this.config.simulation,
+                this.config,
                 this.handleSimulationUpdate.bind(this),
+                offscreen,
             );
         }
 
@@ -123,41 +120,42 @@ export class SimulationEngine extends BaseEventHandler<WorkerMessage & Simulatio
     }
 
     private draw(): void {
-        this.stats?.begin();
-        this.renderer.render(this.world);
+        // this.stats?.begin();
+        // this.renderer.render(this.world);
+        // this.stats?.end();
+
+        // this.world.dirtyChunks.length = 0;
+        // this.world.dirtyParticles.length = 0;
+    }
+
+    private handleSimulationUpdate(): void {
         this.stats?.end();
+        // const chunkSize = Math.pow(this.config.simulation.chunks.size, 2);
+        // const schema = ChunkSchema(chunkSize);
+        // for (const buffer of newBuffers) {
+        //     const chunk = BufferBackedObject(buffer, schema);
+        //     this.world.chunks[chunk.id] = chunk;
+        //     dirtyChunks.push(chunk.id);
+        // }
+        //
+        // for (const dirtyChunk of dirtyChunks) {
+        //     if (!this.world.dirtyChunks.includes(dirtyChunk)) {
+        //         this.world.dirtyChunks.push(dirtyChunk);
+        //     }
+        // }
 
-        this.world.dirtyChunks.length = 0;
-        this.world.dirtyParticles.length = 0;
+        this.stats?.begin();
     }
 
-    private handleSimulationUpdate({newBuffers, dirtyChunks}: UpdateData): void {
-        const chunkSize = Math.pow(this.config.simulation.chunks.size, 2);
-        const schema = ChunkSchema(chunkSize);
-        for (const buffer of newBuffers) {
-            const chunk = BufferBackedObject(buffer, schema);
-            this.world.chunks[chunk.id] = chunk;
-            dirtyChunks.push(chunk.id);
-        }
-
-        for (const dirtyChunk of dirtyChunks) {
-            if (!this.world.dirtyChunks.includes(dirtyChunk)) {
-                this.world.dirtyChunks.push(dirtyChunk);
-            }
-        }
-
-        console.log(1);
-    }
-
-    private replaceParticles(event: ModifyParticleEvent): void {
+    private replaceParticles({coordinate:{x,y},type,radius}: ModifyParticleEvent): void {
         const coordinate = {
-            x: Math.round(event.coordinate.x / this.config.renderer.particleSize),
-            y: Math.round(event.coordinate.y / this.config.renderer.particleSize)
+            x: Math.round(x / this.config.renderer.particleSize),
+            y: Math.round(y / this.config.renderer.particleSize)
         } as GridCoordinate;
 
         const particleCoordinates: GridCoordinate[] = [];
-        this.iterateAroundCoordinate(coordinate, coordinate => particleCoordinates.push(coordinate), event.radius);
-        this.simulation.replaceParticles(event.type, particleCoordinates);
+        this.iterateAroundCoordinate(coordinate, coordinate => particleCoordinates.push(coordinate), radius);
+        this.simulation.replaceParticles(type, particleCoordinates);
     }
 
     private iterateAroundCoordinate(

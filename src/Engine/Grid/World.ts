@@ -10,7 +10,6 @@ import {Chunk} from "./Chunk.ts";
 export class World {
     private readonly chunks = new Map<string, Chunk | undefined>();
     private readonly activeChunks: ActiveChunkList = [];
-    private activeParticles: number = 0;
 
     constructor(
         public readonly chunkSize: number,
@@ -127,10 +126,10 @@ export class World {
         let chunk: Chunk | undefined;
         if (this.outerBounds?.containsBoundingBox(bounds) !== false) {
             chunk = new Chunk(bounds);
-            chunk.chunkData.coordinate.x = x;
-            chunk.chunkData.coordinate.y = y;
+            // chunk.chunkData.coordinate.x = x;
+            // chunk.chunkData.coordinate.y = y;
 
-            this.events.emit('chunkCreated', {coordinate, chunk});
+            // this.events.emit('chunkCreated', {coordinate, chunk});
         }
 
         this.chunks.set(this.toKey(coordinate), chunk);
@@ -172,11 +171,9 @@ export class World {
     }
 
     prepareForUpdate() {
-        this.activeParticles = 0;
         this.activeChunks.length = 0;
         for (const [key, chunk] of this.chunks) {
             if (chunk?.isActive()) {
-                this.activeParticles += chunk.getActiveParticleCount();
                 this.activeChunks.unshift({
                     chunk,
                     coordinate: this.toCoordinate(key),
