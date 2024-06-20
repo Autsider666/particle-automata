@@ -45,6 +45,7 @@ export class Chunk {
                 const coordinate = this.particles.getCoordinate(index);
                 item.coordinate.x = coordinate.x;
                 item.coordinate.y = coordinate.y;
+                item.index = index;
 
                 const particle = this.particles.get(coordinate);
                 item.ephemeral = particle.ephemeral;

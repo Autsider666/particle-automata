@@ -1,7 +1,9 @@
 import './style.css';
 import '@snackbar/core/dist/snackbar.css';
+import {Color, Engine} from "excalibur";
 import {EngineConfigBuilder} from "./Engine/Config/EngineConfig.ts";
-import {Engine} from "./Engine/Engine.ts";
+import {SimulationEngine} from "./Engine/SimulationEngine.ts";
+import {InputManager} from "./Excalibur/InputManager.ts";
 
 const rootElement = document.querySelector<HTMLDivElement>('#renderer');
 if (!rootElement) {
@@ -10,28 +12,24 @@ if (!rootElement) {
 
 const config = EngineConfigBuilder.generate();
 
-const engine = new Engine(rootElement, config);
+const simulationEngine = new SimulationEngine(rootElement, config);
 
-await engine.init();
+await simulationEngine.init();
 
-document.body.addEventListener('keypress', async ({code}) => {
-    if (code !== 'Space') {
-        return;
-    }
+const canvas = document.createElement('canvas');
 
-    if (await engine.isRunning()) {
-        engine.stop();
-    } else {
-        engine.start();
-    }
+rootElement.appendChild(canvas);
+
+const excalibur = new Engine({
+    width: config.renderer.viewport.width,
+    height: config.renderer.viewport.height,
+    canvasElement: canvas,
+    enableCanvasTransparency: true,
+    backgroundColor: Color.Transparent,
 });
 
-// window.addEventListener('resize', () => engine.resize(Traversal.getViewportDimensions(
-//     {
-//         width: URLParams.get('width', "number") ?? window.innerWidth,
-//         height: URLParams.get('height', "number") ?? window.innerHeight,
-//     },
-//     config.renderer.particleSize,
-// )));
+excalibur.add(new InputManager(simulationEngine, config.defaultParticle, config.renderer.particleSize));
+
+await excalibur.start();
 
 

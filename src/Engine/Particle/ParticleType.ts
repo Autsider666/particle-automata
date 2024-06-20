@@ -67,7 +67,7 @@ const particleTypes = {
     }
 } as const;
 
-type ParticleIdentifier = Distinct<string, 'particle'>;
+export type ParticleIdentifier = Distinct<string, 'particle'>;
 
 type BaseParticleData = {
     baseColor: HexColor;
@@ -76,6 +76,7 @@ type BaseParticleData = {
     density?: number,
     immovable?: boolean,
     fluid?: boolean,
+    hidden?:boolean,
 }
 
 export type BaseParticle = BaseParticleData & {
@@ -183,6 +184,4 @@ export const ParticleType = new Proxy<DynamicParticleMap>(new ParticleProvider(p
 
         return target.get(prop);
     },
-});
-
-console.log(ParticleType.has('Air'), ParticleType.Air);
+}) satisfies DynamicParticleMap;

@@ -4,7 +4,7 @@ import {FrameRateManager} from "../../Utility/FrameRateManager.ts";
 import {ObviousNonsenseBehaviourManager} from "../Behaviour/ObviousNonsenseBehaviourManager.ts";
 import {SimulationConfig} from "../Config/SimulationConfig.ts";
 import {World} from "../Grid/World.ts";
-import {ParticleType} from "../Particle/ParticleType.ts";
+import {ParticleIdentifier, ParticleType} from "../Particle/ParticleType.ts";
 import {GridCoordinate} from "../Type/Coordinate.ts";
 import {SimpleWorldBuilder} from "../World/SimpleWorldBuilder.ts";
 import {WorldEvent} from "../World/WorldBuilder.ts";
@@ -79,6 +79,13 @@ export class WebWorkerSimulation {
     // async getRenderBuffer():Promise<SharedArrayBuffer> {
     //     return this.renderBuffer;
     // }
+    replaceParticles(type: ParticleIdentifier, particleCoordinates: GridCoordinate[]) {
+        for (const particleCoordinate of particleCoordinates) {
+            if (this.world.getParticle(particleCoordinate)?.type !== type) {
+                this.world.setParticle(particleCoordinate, ParticleType.get(type));
+            }
+        }
+    }
 }
 
 Comlink.expose(WebWorkerSimulation);

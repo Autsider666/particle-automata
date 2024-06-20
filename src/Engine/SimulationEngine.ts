@@ -5,15 +5,29 @@ import {FrameRateManager} from "../Utility/FrameRateManager.ts";
 import Stats from "../Utility/Stats/Stats.ts";
 import {ViewportDimensions} from "../Utility/Type/Dimensional.ts";
 import {EngineConfig} from "./Config/EngineConfig.ts";
+import {ParticleIdentifier} from "./Particle/ParticleType.ts";
 import {DynamicRenderer} from "./Renderer/DynamicRenderer.ts";
 import {RendererInterface} from "./Renderer/RendererInterface.ts";
 import {RendererWorld} from "./Renderer/Type/RendererWorld.ts";
 import {ChunkSchema} from "./Schema/ChunkSchema.ts";
+import {SimulationEvent} from "./Simulation/SimulationInterface.ts";
 import {UpdateData, WebWorkerSimulation} from "./Simulation/WebWorkerSimulation.ts";
 import Worker from "./Simulation/WebWorkerSimulation.ts?worker";
+import {GridCoordinate, ViewportCoordinate} from "./Type/Coordinate.ts";
 import {WorkerMessage} from "./Type/WorkerMessage.ts";
 
-export class Engine extends BaseEventHandler<WorkerMessage> {
+export type ModifyParticleEvent = {
+    type: ParticleIdentifier,
+    coordinate: ViewportCoordinate,
+    radius: number,
+};
+
+export type EngineEvent = {
+    replaceParticles: ModifyParticleEvent,
+    focus: boolean,
+}
+
+export class SimulationEngine extends BaseEventHandler<WorkerMessage & SimulationEvent & EngineEvent> {
     private isInitialized: boolean = false;
 
     private simulation!: WebWorkerSimulation;
@@ -27,8 +41,6 @@ export class Engine extends BaseEventHandler<WorkerMessage> {
         private readonly config: EngineConfig,
     ) {
         super();
-
-        console.log(this.config);
 
         this.world = {
             chunks: [],
@@ -44,6 +56,8 @@ export class Engine extends BaseEventHandler<WorkerMessage> {
             60,
             !this.config.simulation.startOnInit,
         );
+
+        this.events.on('replaceParticles', this.replaceParticles.bind(this));
 
         if (config.showStats) {
             this.stats = new Stats({
@@ -129,6 +143,45 @@ export class Engine extends BaseEventHandler<WorkerMessage> {
         for (const dirtyChunk of dirtyChunks) {
             if (!this.world.dirtyChunks.includes(dirtyChunk)) {
                 this.world.dirtyChunks.push(dirtyChunk);
+            }
+        }
+
+        console.log(1);
+    }
+
+    private replaceParticles(event: ModifyParticleEvent): void {
+        const coordinate = {
+            x: Math.round(event.coordinate.x / this.config.renderer.particleSize),
+            y: Math.round(event.coordinate.y / this.config.renderer.particleSize)
+        } as GridCoordinate;
+
+        const particleCoordinates: GridCoordinate[] = [];
+        this.iterateAroundCoordinate(coordinate, coordinate => particleCoordinates.push(coordinate), event.radius);
+        this.simulation.replaceParticles(event.type, particleCoordinates);
+    }
+
+    private iterateAroundCoordinate(
+        {x, y}: GridCoordinate,
+        callback: (coordinate: GridCoordinate) => void,
+        radius: number,
+        probability: number = 1,
+    ) {
+        const radiusSquared = radius * radius;
+        for (let dX = -radius; dX <= radius; dX++) {
+            const resultingX = x + dX;
+            if (resultingX < 0 || resultingX >= this.config.simulation.outerBounds.width) {
+                continue;
+            }
+
+            for (let dY = -radius; dY <= radius; dY++) {
+                const resultingY = y + dY;
+                if (resultingY < 0 || resultingY >= this.config.simulation.outerBounds.height) {
+                    continue;
+                }
+
+                if (dX * dX + dY * dY <= radiusSquared && (probability >= 1 || Math.random() > 0.5)) {
+                    callback({x: resultingX, y: resultingY} as GridCoordinate);
+                }
             }
         }
     }

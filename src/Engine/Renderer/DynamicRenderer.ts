@@ -35,11 +35,12 @@ export class DynamicRenderer implements RendererInterface {
         config: RendererConfig,
         rootElement: HTMLElement
     ): void {
-        const props: RendererProps = {
-            canvas: this.getCanvasForMode(rootElement, mode, config.viewport),
-            config,
-        };
+        const canvas = this.getCanvasForMode(rootElement, mode);
 
+        canvas.width = config.viewport.width;
+        canvas.height = config.viewport.height;
+
+        const props: RendererProps = {canvas, config};
         let renderer: RendererInterface | undefined;
         switch (mode) {
             case RenderMode.Debug:
@@ -62,10 +63,7 @@ export class DynamicRenderer implements RendererInterface {
         }
     }
 
-    private getCanvasForMode(rootElement: HTMLElement, renderMode: RenderMode, {
-        width,
-        height
-    }: ViewportDimensions): HTMLCanvasElement {
+    public getCanvasForMode(rootElement: HTMLElement, renderMode: RenderMode): HTMLCanvasElement {
         let canvas = rootElement.querySelector<HTMLCanvasElement>(`canvas.${renderMode}`);
         if (!canvas) {
             canvas = document.createElement('canvas');
@@ -73,8 +71,6 @@ export class DynamicRenderer implements RendererInterface {
             rootElement.appendChild(canvas);
         }
 
-        canvas.width = width;
-        canvas.height = height;
         return canvas;
     }
 }
