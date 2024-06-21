@@ -1,7 +1,6 @@
 import {Array2D} from "../../Utility/Array2D.ts";
 import {BoundingBox} from "../../Utility/Excalibur/BoundingBox.ts";
-import type {Particle} from "../Particle/Particle";
-import {ParticleType} from "../Particle/ParticleType.ts";
+import {Particle, ParticleBuilder, ParticleElement, PossibleElementType} from "../Particle/Particle";
 import {GridCoordinate} from "../Type/Coordinate.ts";
 
 let chunkId: number = 0;
@@ -16,7 +15,7 @@ export class Chunk {
 
     constructor(
         public readonly bounds: BoundingBox,
-        private readonly newParticleBuilder: () => Particle = () => ParticleType.Air,
+        private readonly newParticleBuilder: () => Particle = () => ParticleBuilder(ParticleElement.Air.type),
     ) {
         this.particles = new Array2D<Particle, GridCoordinate>(bounds, this.newParticleBuilder.bind(this), bounds.topLeft);
     }
@@ -39,7 +38,11 @@ export class Chunk {
         return this.particles.get<P>(coordinate);
     }
 
-    public setParticle(coordinate: GridCoordinate, particle: Particle): void {
+    public createNewParticle(coordinate: GridCoordinate, elementType: PossibleElementType): void {
+        this.setParticle(coordinate, ParticleBuilder(elementType));
+    }
+
+    private setParticle(coordinate: GridCoordinate, particle: Particle): void {
         this.particles.set(coordinate, particle);
 
         this.wakeUp();

@@ -3,7 +3,7 @@ import {DecodedBuffer} from "../../Utility/BufferBackedObject.ts";
 import {RGBATuple} from "../../Utility/Color.ts";
 import {PixelDataHelper} from "../../Utility/Rendering/PixelDataHelper.ts";
 import {ViewportDimensions} from "../../Utility/Type/Dimensional.ts";
-import {ParticleType} from "../Particle/ParticleType.ts";
+import {ParticleElement} from "../Particle/Particle.ts";
 import {ParticleSchema} from "../Schema/ParticleSchema.ts";
 import {GridCoordinate} from "../Type/Coordinate.ts";
 import {BaseRenderer, RendererProps} from "./BaseRenderer.ts";
@@ -40,7 +40,7 @@ export class WebGLRenderer extends BaseRenderer {
 
     private readonly gl: WebGLRenderingContext;
     private readonly colorMode: number;
-    private readonly backgroundColor: RGBATuple = ParticleType.Air.colorTuple ?? [0, 0, 0, 1];
+    private readonly backgroundColor: RGBATuple = ParticleElement.Air.colorTuple ?? [0, 0, 0, 1];
 
     constructor(props: RendererProps, useAlpha: boolean = false) {
         super(props);

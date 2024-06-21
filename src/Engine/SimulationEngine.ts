@@ -4,7 +4,7 @@ import {FrameRateManager} from "../Utility/FrameRateManager.ts";
 import Stats from "../Utility/Stats/Stats.ts";
 import {ViewportDimensions} from "../Utility/Type/Dimensional.ts";
 import {EngineConfig} from "./Config/EngineConfig.ts";
-import {ParticleIdentifier} from "./Particle/ParticleType.ts";
+import {ParticleElement} from "./Particle/Particle.ts";
 import {DynamicRenderer} from "./Renderer/DynamicRenderer.ts";
 import {RendererInterface} from "./Renderer/RendererInterface.ts";
 import {SimulationEvent} from "./Simulation/SimulationInterface.ts";
@@ -14,7 +14,7 @@ import {GridCoordinate, ViewportCoordinate} from "./Type/Coordinate.ts";
 import {WorkerMessage} from "./Type/WorkerMessage.ts";
 
 export type ModifyParticleEvent = {
-    type: ParticleIdentifier,
+    element: ParticleElement,
     coordinate: ViewportCoordinate,
     radius: number,
 };
@@ -147,7 +147,7 @@ export class SimulationEngine extends BaseEventHandler<WorkerMessage & Simulatio
         this.stats?.begin();
     }
 
-    private replaceParticles({coordinate: {x, y}, type, radius}: ModifyParticleEvent): void {
+    private replaceParticles({coordinate: {x, y}, element, radius}: ModifyParticleEvent): void {
         const coordinate = {
             x: Math.round(x / this.config.renderer.particleSize),
             y: Math.round(y / this.config.renderer.particleSize)
@@ -155,7 +155,7 @@ export class SimulationEngine extends BaseEventHandler<WorkerMessage & Simulatio
 
         const particleCoordinates: GridCoordinate[] = [];
         this.iterateAroundCoordinate(coordinate, coordinate => particleCoordinates.push(coordinate), radius);
-        this.simulation.replaceParticles(type, particleCoordinates);
+        this.simulation.replaceParticles(element.type, particleCoordinates);
     }
 
     private iterateAroundCoordinate(

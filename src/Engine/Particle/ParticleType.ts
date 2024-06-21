@@ -27,7 +27,7 @@ const genericColorVariance: ColorVariance = {
 //     immovable?: boolean,
 // }
 
-export type ParticleType = keyof typeof particleTypes;
+type ParticleType = keyof typeof particleTypes;
 
 const particleTypes = {
     Air: {
@@ -67,7 +67,7 @@ const particleTypes = {
     }
 } as const;
 
-export type ParticleIdentifier = Distinct<string, 'particle'>;
+type ParticleIdentifier = Distinct<string, 'particle'>;
 
 type BaseParticleData = {
     baseColor: HexColor;
@@ -79,7 +79,7 @@ type BaseParticleData = {
     hidden?: boolean,
 }
 
-export type BaseParticle = BaseParticleData & {
+type BaseParticle = BaseParticleData & {
     type: ParticleIdentifier,
     color: string,
     colorTuple: RGBATuple,
@@ -169,7 +169,7 @@ type DynamicParticleMap = ParticleProvider & {
     [key: string | ParticleType]: BaseParticle,
 };
 
-export const ParticleType = new Proxy<DynamicParticleMap>(new ParticleProvider(particleTypes, 'Air') as DynamicParticleMap, {
+const ParticleType = new Proxy<DynamicParticleMap>(new ParticleProvider(particleTypes, 'Air') as DynamicParticleMap, {
     get(target: ParticleProvider, prop: string) {
         if (prop in target) {
             // @ts-expect-error Proxy stuff is hard.

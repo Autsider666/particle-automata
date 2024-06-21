@@ -2,6 +2,7 @@ import './style.css';
 import '@snackbar/core/dist/snackbar.css';
 import {Color, Engine} from "excalibur";
 import {EngineConfigBuilder} from "./Engine/Config/EngineConfig.ts";
+import {ParticleElement} from "./Engine/Particle/Particle.ts";
 import {SimulationEngine} from "./Engine/SimulationEngine.ts";
 import {InputManager} from "./Excalibur/InputManager.ts";
 import {URLParams} from "./Utility/URLParams.ts";
@@ -31,11 +32,9 @@ const excalibur = new Engine({
 
 excalibur.add(new InputManager(
     simulationEngine,
-    config.defaultParticle,
+    ParticleElement[config.defaultParticleElement],
     config.renderer.particleSize,
     URLParams.get('drawRadius', 'number') ?? undefined
 ));
 
 await excalibur.start();
-
-

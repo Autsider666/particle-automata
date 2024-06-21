@@ -3,8 +3,7 @@ import {RGBATuple} from "../../Utility/Color.ts";
 import {PixelDataHelper} from "../../Utility/Rendering/PixelDataHelper.ts";
 import {ViewportDimensions} from "../../Utility/Type/Dimensional.ts";
 import {World} from "../Grid/World.ts";
-import {Particle} from "../Particle/Particle.ts";
-import {ParticleType} from "../Particle/ParticleType.ts";
+import {Particle, ParticleElement} from "../Particle/Particle.ts";
 import {GridCoordinate} from "../Type/Coordinate.ts";
 import {BaseRenderer, RendererProps} from "./BaseRenderer.ts";
 import {RendererWorld} from "./Type/RendererWorld.ts";
@@ -40,7 +39,7 @@ export class RealWorldWebGLRenderer extends BaseRenderer {
 
     private readonly gl: WebGLRenderingContext;
     private readonly colorMode: number;
-    private readonly backgroundColor: RGBATuple = ParticleType.Air.colorTuple ?? [0, 0, 0, 1];
+    private readonly backgroundColor: RGBATuple = ParticleElement.Air.colorTuple ?? [0, 0, 0, 1];
 
     constructor(props: RendererProps, useAlpha: boolean = false) {
         super(props);

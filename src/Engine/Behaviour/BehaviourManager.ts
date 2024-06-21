@@ -1,18 +1,10 @@
 import {Direction, Traversal} from "../../Utility/Type/Dimensional.ts";
 import {Chunk} from "../Grid/Chunk.ts";
 import {World} from "../Grid/World.ts";
-import {Particle} from "../Particle/Particle.ts";
+import {Particle, PossibleElementType} from "../Particle/Particle.ts";
 import {GridCoordinate} from "../Type/Coordinate.ts";
 
-type DirtyFlag = {
-    dirty?: boolean,
-    id?: number; //FIXME remove
-};
-
-export type DirtyParticle = Particle<DirtyFlag>
-
-
-let particleId: number = 0;
+export type DirtyParticle = Particle
 
 export abstract class BehaviourManager {
     constructor(
@@ -27,13 +19,11 @@ export abstract class BehaviourManager {
         }
 
         this.chunk.iterateAllParticles<DirtyParticle>((particle, coordinate) => {
-            if (particle.ephemeral || particle.immovable) {
+            if (particle.element.ephemeral || particle.element.immovable) {
                 return;
             }
 
-            if (particle.id === undefined) {
-                particle.id = particleId++;
-            } else if (duplicateCheck.has(particle.id)) {
+            if (duplicateCheck.has(particle.id)) {
                 return;
             }
 
@@ -58,11 +48,11 @@ export abstract class BehaviourManager {
         return this.world.getParticle(coordinate) as P;
     }
 
-    setParticle(coordinate: GridCoordinate, particle: Particle): void {
+    setParticle(coordinate: GridCoordinate, element: PossibleElementType): void {
         if (this.chunk.containsCoordinate(coordinate)) {
-            this.chunk.setParticle(coordinate, particle);
+            this.chunk.createNewParticle(coordinate, element);
         } else {
-            this.world.setParticle(coordinate, particle);
+            this.world.createNewParticle(coordinate, element);
         }
     }
 

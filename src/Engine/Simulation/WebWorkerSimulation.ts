@@ -4,7 +4,7 @@ import {FrameRateManager} from "../../Utility/FrameRateManager.ts";
 import {ObviousNonsenseBehaviourManager} from "../Behaviour/ObviousNonsenseBehaviourManager.ts";
 import {EngineConfig} from "../Config/EngineConfig.ts";
 import {World} from "../Grid/World.ts";
-import {ParticleIdentifier, ParticleType} from "../Particle/ParticleType.ts";
+import {ElementType} from "../Particle/Particle.ts";
 import {RealWorldWebGLRenderer} from "../Renderer/RealWorldWebGLRenderer.ts";
 import {GridCoordinate} from "../Type/Coordinate.ts";
 import {SimpleWorldBuilder} from "../World/SimpleWorldBuilder.ts";
@@ -96,10 +96,10 @@ export class WebWorkerSimulation {
     // async getRenderBuffer():Promise<SharedArrayBuffer> {
     //     return this.renderBuffer;
     // }
-    replaceParticles(type: ParticleIdentifier, particleCoordinates: GridCoordinate[]) {
+    replaceParticles(type: ElementType, particleCoordinates: GridCoordinate[]) {
         for (const particleCoordinate of particleCoordinates) {
             if (this.world.isValidCoordinate(particleCoordinate)) {
-                this.world.setParticle(particleCoordinate, ParticleType.get(type));
+                this.world.createNewParticle(particleCoordinate, type);
             }
             // if (replace || this.world.getParticle(particleCoordinate)?.type !== type) {
             // }

@@ -1,8 +1,7 @@
 import {Direction, Traversal} from "../../Utility/Type/Dimensional.ts";
 import {Chunk} from "../Grid/Chunk.ts";
 import {World} from "../Grid/World.ts";
-import {Particle} from "../Particle/Particle.ts";
-import {ParticleType} from "../Particle/ParticleType.ts";
+import {Particle, ParticleElement} from "../Particle/Particle.ts";
 import {GridCoordinate} from "../Type/Coordinate.ts";
 import {BehaviourManager} from "./BehaviourManager.ts";
 
@@ -18,7 +17,7 @@ type NeighboringDirection = Direction<-1 | 0 | 1>;
 type DirectionalOptions = NeighboringDirection[];
 
 export class ObviousNonsenseBehaviourManager extends BehaviourManager {
-    private readonly airDensity: number = ParticleType.Air.density ?? 1;
+    private readonly airDensity: number = ParticleElement.Air.density;
 
     private readonly updateList: DirectionalOptions = [
         {dX: 0, dY: +1},
@@ -51,12 +50,12 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
     }
 
     updateParticle(particle: ObviousParticle, coordinate: GridCoordinate): void {
-        if (particle.ephemeral) { //TODO reset displacement?
+        if (particle.element.ephemeral) { //TODO reset displacement?
             return;
         }
 
-        if (particle.density !== undefined && !particle.immovable) {
-            if (particle.fluid) {
+        if (particle.element.density !== undefined && !particle.element.immovable) {
+            if (particle.element.fluid) {
                 this.updateFluid(particle, coordinate);
             } else {
                 this.updateOther(particle, coordinate);
@@ -124,16 +123,16 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
 
         const targetCoordinate = Traversal.getDestinationCoordinate(coordinate, direction);
         const particleInDirection = this.getParticle<ObviousParticle>(targetCoordinate);
-        if (particleInDirection.immovable) {
+        if (particleInDirection.element.immovable) {
             return false;
         }
 
-        const density = particle.density ?? 0;
-        const densityInDirection = particleInDirection.density ?? 0;
+        const density = particle.element.density ?? 0;
+        const densityInDirection = particleInDirection.element.density ?? 0;
         const rises = this.doesParticleRise(particle);
 
         // Move to the given position if it's empty.
-        if (particleInDirection.ephemeral) {
+        if (particleInDirection.element.ephemeral) {
             if (
                 // Whether to check if we're heavier than air or air's heavier than us
                 // depends on if we move up or down
@@ -194,7 +193,7 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
     }
 
     private doesParticleRise(particle: ObviousParticle): boolean {
-        return particle.density ? particle.density < this.airDensity : true;
+        return particle.element.density < this.airDensity;
     }
 
     private canMoveInDirection(coordinate: GridCoordinate, direction: Direction): boolean {

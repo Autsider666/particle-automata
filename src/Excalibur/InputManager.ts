@@ -1,5 +1,5 @@
 import {Actor, Engine, Vector} from "excalibur";
-import {ParticleIdentifier, ParticleType} from "../Engine/Particle/ParticleType.ts";
+import {ParticleElement} from "../Engine/Particle/Particle.ts";
 import {SimulationEvent} from "../Engine/Simulation/SimulationInterface.ts";
 import {EngineEvent} from "../Engine/SimulationEngine.ts";
 import {ViewportCoordinate} from "../Engine/Type/Coordinate.ts";
@@ -44,7 +44,7 @@ export class InputManager extends Actor {
 
     constructor(
         private readonly eventHandler: EventHandlerInterface<SimulationEvent & EngineEvent>,
-        private particle: ParticleIdentifier,
+        private selectedElement: ParticleElement,
         private readonly particleSize: number,
         private drawRadius: number = 3,
         private minDrawRadius: number = 0,
@@ -61,7 +61,7 @@ export class InputManager extends Actor {
                 isErasing: this.isErasing,
                 overrideWorld: this.overrideWorld,
                 drawRadius: this.drawRadius,
-                particle: this.particle,
+                element: this.selectedElement,
             }
         );
 
@@ -108,7 +108,7 @@ export class InputManager extends Actor {
             isErasing: this.isErasing,
             overrideWorld: this.overrideWorld,
             drawRadius: this.drawRadius,
-            particle: this.particle,
+            element: this.selectedElement,
         });
     }
 
@@ -130,12 +130,13 @@ export class InputManager extends Actor {
         this.updatePointer();
     }
 
-    changeElement(element: ParticleIdentifier): void {
-        if (ParticleType[element]?.hidden !== false || this.particle === element) {
+    changeElement(elementType: string): void {
+        const element: ParticleElement | undefined = ParticleElement[elementType];
+        if (!element || element.hidden || this.selectedElement === element) {
             return;
         }
 
-        this.particle = element;
+        this.selectedElement = element;
 
         this.updatePointer();
     }
@@ -184,10 +185,10 @@ export class InputManager extends Actor {
 
     private draw({x, y}: Coordinate): void {
         this.eventHandler.emit('replaceParticles', {
-            type: this.isErasing ? ParticleType.empty.type : this.particle, //FIXME remove isErasing completely
+            element: this.isErasing ? ParticleElement.Air : this.selectedElement,
             coordinate: {x, y} as ViewportCoordinate, // To prevent vectors
             radius: this.drawRadius,
-            // probability: Elements[this.particle].drawProbability,
+            // probability: Elements[this.selectedElement].drawProbability,
             // force: this.overrideWorld || this.isErasing,
         });
     }

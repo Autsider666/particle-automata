@@ -1,11 +1,11 @@
 import {Canvas} from "excalibur";
-import {ParticleIdentifier, ParticleType} from "../../Engine/Particle/ParticleType.ts";
+import {ParticleElement} from "../../Engine/Particle/Particle.ts";
 import {Color} from "../../Utility/Color.ts";
 
 type PointerState = {
     isErasing: boolean,
     overrideWorld: boolean,
-    particle: ParticleIdentifier,
+    element: ParticleElement,
     drawRadius: number,
 }
 
@@ -30,8 +30,8 @@ export class Pointer extends Canvas {
     }
 
     execute(ctx: CanvasRenderingContext2D) {
-        const {particle, drawRadius, isErasing, overrideWorld} = this.state;
-        const {baseColor, colorVariance} = ParticleType.get(particle);
+        const {element, drawRadius, isErasing, overrideWorld} = this.state;
+        const {color, colorVariance} = element;
 
         const radiusSquared = Math.pow(drawRadius, 2);
         const outerDarius = Math.pow(drawRadius - 1, 2);
@@ -39,10 +39,10 @@ export class Pointer extends Canvas {
             for (let dY = -drawRadius; dY <= drawRadius; dY++) {
                 if (dX * dX + dY * dY <= radiusSquared) {
                     if (!isErasing) {
-                        let resultingColor: string = baseColor;
+                        let resultingColor: string = color;
                         if (colorVariance) {
                             resultingColor = Color.varyColor(
-                                baseColor,
+                                color,
                                 {
                                     ...colorVariance,
                                     alpha: {value: overrideWorld ? 0 : -0.2},

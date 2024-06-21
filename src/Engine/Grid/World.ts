@@ -2,7 +2,7 @@ import {EventHandlerInterface} from "../../Utility/Event/EventHandlerInterface.t
 import {BoundingBox} from "../../Utility/Excalibur/BoundingBox.ts";
 import type {Direction} from "../../Utility/Type/Dimensional.ts";
 import {Traversal} from "../../Utility/Type/Dimensional.ts";
-import {Particle} from "../Particle/Particle.ts";
+import {Particle, PossibleElementType} from "../Particle/Particle.ts";
 import {ChunkCoordinate, GridCoordinate} from "../Type/Coordinate.ts";
 import {ChunkList, WorldEvent} from "../World/WorldBuilder.ts";
 import {Chunk} from "./Chunk.ts";
@@ -28,14 +28,14 @@ export class World {
         return this.getChunk(coordinate)?.getParticle(coordinate);
     }
 
-    setParticle(coordinate: GridCoordinate, particle: Particle): boolean {
+    createNewParticle(coordinate: GridCoordinate, elementType: PossibleElementType): boolean {
         const chunk = this.getChunk(coordinate);
         if (!chunk) {
-            console.warn('setParticle Failed', coordinate, particle);
+            console.warn('createNewParticle Failed', coordinate, elementType);
             return false;
         }
 
-        chunk.setParticle(coordinate, particle);
+        chunk.createNewParticle(coordinate, elementType);
 
         return true;
     }
