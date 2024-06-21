@@ -47,6 +47,7 @@ export class SimulationEngine extends BaseEventHandler<WorkerMessage & Simulatio
         );
 
         this.events.on('replaceParticles', this.replaceParticles.bind(this));
+        this.events.on('debug', this.handleDebug.bind(this));
 
         if (config.showStats) {
             this.stats = new Stats({
@@ -145,6 +146,15 @@ export class SimulationEngine extends BaseEventHandler<WorkerMessage & Simulatio
         // }
 
         this.stats?.begin();
+    }
+
+    private handleDebug({x, y}: ViewportCoordinate): void {
+        console.log(x,y);
+        const coordinate = {
+            x: Math.round(x / this.config.renderer.particleSize),
+            y: Math.round(y / this.config.renderer.particleSize)
+        } as GridCoordinate;
+        this.simulation.whatParticleAmILookingAt(coordinate);
     }
 
     private replaceParticles({coordinate: {x, y}, element, radius}: ModifyParticleEvent): void {

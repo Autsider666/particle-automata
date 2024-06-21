@@ -1,4 +1,5 @@
 import * as Comlink from "comlink";
+import {Array2D} from "../../Utility/Array2D.ts";
 import {EventHandler} from "../../Utility/Excalibur/EventHandler.ts";
 import {FrameRateManager} from "../../Utility/FrameRateManager.ts";
 import {ObviousNonsenseBehaviourManager} from "../Behaviour/ObviousNonsenseBehaviourManager.ts";
@@ -12,12 +13,6 @@ import {WorldEvent} from "../World/WorldBuilder.ts";
 import {Simulation} from "./Simulation.ts";
 import {SimulationInterface} from "./SimulationInterface.ts";
 
-export type UpdateData = {
-    newBuffers: SharedArrayBuffer[],
-    dirtyChunks: number[],
-    dirtyParticles: number[],
-}
-
 export type UpdateCallback = () => void
 
 export class WebWorkerSimulation {
@@ -26,6 +21,7 @@ export class WebWorkerSimulation {
     private readonly world: World;
     private readonly events = new EventHandler<WorldEvent>();
     private readonly renderer: RealWorldWebGLRenderer;
+    private readonly createQueue: Array2D<ElementType | undefined, GridCoordinate>;
 
     constructor(
         private readonly config: EngineConfig,
@@ -48,6 +44,8 @@ export class WebWorkerSimulation {
             dirtyChunks: [],
             chunks: [],
         }, this.world);
+
+        this.createQueue = new Array2D<ElementType | undefined, GridCoordinate>(config.simulation.outerBounds, () => undefined);
     }
 
     async start(): Promise<void> {
@@ -60,14 +58,13 @@ export class WebWorkerSimulation {
 
     private update(): void {
         this.simulation.update();
-        // const middle = Math.round(this.config.simulation.outerBounds.width/3);
-        // const range = 50;
-        // for (let i = -range; i < range; i++) {
-        //     if (i %2 === 0) {
-        //         continue;
-        //     }
-        //     this.world.setParticle({x: middle+i, y: 0} as GridCoordinate, ParticleType.Sand);
-        // }
+
+        this.createQueue.iterateChanges(({item: type, coordinate}) => {
+            if (type) {
+                this.world.createNewParticle(coordinate, type);
+            }
+        });
+        this.createQueue.resetChanges();
 
         this.render();
 
@@ -85,25 +82,17 @@ export class WebWorkerSimulation {
         }, this.world);
     }
 
-    // async setUpdateCallback(callback: ((buffer: ArrayBuffer) => void)): Promise<void> {
-    //     this.updateCallback = callback;
-    // }
-    //
-    // async setNewChunkCallback(callback: SharedArrayBufferCallback): Promise<void> {
-    //     this.newChunkCallback = callback;
-    // }
-
-    // async getRenderBuffer():Promise<SharedArrayBuffer> {
-    //     return this.renderBuffer;
-    // }
     replaceParticles(type: ElementType, particleCoordinates: GridCoordinate[]) {
         for (const particleCoordinate of particleCoordinates) {
             if (this.world.isValidCoordinate(particleCoordinate)) {
-                this.world.createNewParticle(particleCoordinate, type);
+                this.createQueue.set(particleCoordinate, type);
             }
-            // if (replace || this.world.getParticle(particleCoordinate)?.type !== type) {
-            // }
         }
+    }
+
+    whatParticleAmILookingAt(coordinate: GridCoordinate): void {
+        const particle = this.world.getParticle(coordinate);
+        console.log(coordinate, particle?.element.type, particle);
     }
 }
 

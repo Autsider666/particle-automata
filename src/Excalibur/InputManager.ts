@@ -17,6 +17,7 @@ export enum WorldAction {
     DecreaseDrawSize = 'DecreaseDrawSize',
     Draw = 'Draw',
     Erase = 'Erase',
+    Debug = 'Debug',
 }
 
 export type WorldConfig = Record<WorldAction, InputType[]>;
@@ -35,7 +36,8 @@ export class InputManager extends Actor {
         [WorldAction.DecreaseDrawSize]: [InputType.ScrollDown],
         [WorldAction.Pause]: [],
         [WorldAction.Play]: [],
-        [WorldAction.Erase]: [InputType.ControlLeft]
+        [WorldAction.Erase]: [InputType.ControlLeft],
+        [WorldAction.Debug]: [InputType.AltLeft]
     };
 
     private readonly canvas: Pointer;
@@ -85,6 +87,10 @@ export class InputManager extends Actor {
                 }
             },
             [WorldAction.Erase]: released => this.toggleErase(released === undefined ? undefined : !released),
+            [WorldAction.Debug]: () => this.eventHandler.emit('debug', {
+                x: this.pos.x,
+                y: this.pos.y
+            } as ViewportCoordinate),
         };
     }
 

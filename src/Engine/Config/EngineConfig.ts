@@ -49,13 +49,13 @@ export class EngineConfigBuilder {
 
         const particleSize = URLParams.get('particleSize', "number") ?? 5;
 
-        const width = URLParams.get('width', "number") ?? window.outerWidth;
-        const height = URLParams.get('height', "number") ?? window.innerHeight;
+        const width = (URLParams.get('width', "number") ?? window.outerWidth) * particleSize;
+        const height = (URLParams.get('height', "number") ?? window.innerHeight) * particleSize;
 
         const viewport = Traversal.getViewportDimensions(
             {
-                width: width ?? window.outerWidth,
-                height: height ?? window.innerHeight,
+                width: Math.min(width, window.outerWidth),
+                height: Math.min(height, window.innerHeight),
             }
         );
 

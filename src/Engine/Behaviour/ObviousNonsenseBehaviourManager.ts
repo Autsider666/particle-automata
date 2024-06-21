@@ -7,7 +7,6 @@ import {BehaviourManager} from "./BehaviourManager.ts";
 
 type ObviousParticleData = {
     hasBeenDisplaced?: boolean,
-    dirty?: boolean,
 }
 
 type ObviousParticle = Particle<ObviousParticleData>;

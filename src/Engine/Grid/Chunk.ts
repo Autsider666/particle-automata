@@ -14,7 +14,7 @@ export class Chunk {
     private shouldUpdateNextTime: boolean = false;
 
     constructor(
-        public readonly bounds: BoundingBox,
+        public readonly bounds: BoundingBox<GridCoordinate>,
         private readonly newParticleBuilder: () => Particle = () => ParticleBuilder(ParticleElement.Air.type),
     ) {
         this.particles = new Array2D<Particle, GridCoordinate>(bounds, this.newParticleBuilder.bind(this), bounds.topLeft);
@@ -45,6 +45,8 @@ export class Chunk {
     private setParticle(coordinate: GridCoordinate, particle: Particle): void {
         this.particles.set(coordinate, particle);
 
+        particle.dirty = true;
+
         this.wakeUp();
     }
 
@@ -58,6 +60,9 @@ export class Chunk {
 
         this.setParticle(targetCoordinate, currentParticle);
         source.setParticle(currentCoordinate, targetParticle);
+
+        currentParticle.dirty = true;
+        targetParticle.dirty = true;
 
         this.wakeUp();
     }

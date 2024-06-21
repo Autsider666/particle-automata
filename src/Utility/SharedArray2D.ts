@@ -9,7 +9,7 @@ export class SharedArray2D<I, C extends Coordinate = Coordinate> extends Array2D
     constructor(
         dimensions: Dimensions,
         updateParticleValue: DefaultValueSetter<I>,
-        protected readonly offset: Coordinate,
+        protected readonly offset: C,
         existingStore: I[],
     ) {
         super(

@@ -138,10 +138,6 @@ export class World {
         let chunk: Chunk | undefined;
         if (this.outerBounds?.containsBoundingBox(bounds) !== false) {
             chunk = new Chunk(bounds);
-            // chunk.chunkData.coordinate.x = x;
-            // chunk.chunkData.coordinate.y = y;
-
-            // this.events.emit('chunkCreated', {coordinate, chunk});
         }
 
         this.chunks.set(this.toKey(coordinate), chunk);

@@ -4,7 +4,7 @@ import {ParticleBuilder, ParticleElement} from "../Particle/Particle.ts";
 import {GridCoordinate} from "../Type/Coordinate.ts";
 import {Chunk} from './Chunk.ts';
 
-const testBounds = BoundingBox.fromDimension(10, 5);
+const testBounds = BoundingBox.fromDimension<GridCoordinate>(10, 5);
 
 test('Can get particle', () => {
     const chunk = new Chunk(testBounds, () => ParticleBuilder('Air'));
