@@ -4,6 +4,7 @@ import {Color, Engine} from "excalibur";
 import {EngineConfigBuilder} from "./Engine/Config/EngineConfig.ts";
 import {SimulationEngine} from "./Engine/SimulationEngine.ts";
 import {InputManager} from "./Excalibur/InputManager.ts";
+import {URLParams} from "./Utility/URLParams.ts";
 
 const rootElement = document.querySelector<HTMLDivElement>('#renderer');
 if (!rootElement) {
@@ -28,7 +29,12 @@ const excalibur = new Engine({
     backgroundColor: Color.Transparent,
 });
 
-excalibur.add(new InputManager(simulationEngine, config.defaultParticle, config.renderer.particleSize));
+excalibur.add(new InputManager(
+    simulationEngine,
+    config.defaultParticle,
+    config.renderer.particleSize,
+    URLParams.get('drawRadius', 'number') ?? undefined
+));
 
 await excalibur.start();
 

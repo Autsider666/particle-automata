@@ -26,12 +26,12 @@ export abstract class BaseRenderer implements RendererInterface {
         this.width = config.viewport.width;
     }
 
-    public render(world: RendererWorld, realWorld?:World): void {
+    public render(world: RendererWorld, realWorld?: World): void {
         this.draw(world, realWorld);
         this.firstDraw = false;
     }
 
-    protected abstract draw(world: RendererWorld, realWorld?:World): void;
+    protected abstract draw(world: RendererWorld, realWorld?: World): void;
 
     resize({height, width}: ViewportDimensions): void {
         this.firstDraw = true;

@@ -49,14 +49,14 @@ export class Chunk {
         source: Chunk,
         currentCoordinate: GridCoordinate,
         targetCoordinate: GridCoordinate,
-    ): P {
+    ): void {
         const currentParticle = source.getParticle<P>(currentCoordinate);
         const targetParticle = this.getParticle<P>(targetCoordinate);
 
         this.setParticle(targetCoordinate, currentParticle);
         source.setParticle(currentCoordinate, targetParticle);
 
-        return targetParticle;
+        this.wakeUp();
     }
 
     public isValidCoordinate(coordinate: GridCoordinate) {
@@ -77,5 +77,9 @@ export class Chunk {
     public wakeUp(): void {
         this.shouldUpdate = true;
         this.shouldUpdateNextTime = true;
+    }
+
+    public getAmountDirty(): number {
+        return this.particles.getChangesCount();
     }
 }

@@ -76,7 +76,7 @@ type BaseParticleData = {
     density?: number,
     immovable?: boolean,
     fluid?: boolean,
-    hidden?:boolean,
+    hidden?: boolean,
 }
 
 export type BaseParticle = BaseParticleData & {

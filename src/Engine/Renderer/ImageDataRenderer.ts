@@ -34,7 +34,6 @@ export class ImageDataRenderer extends Abstract2DContextRenderer {
     }
 
     private handleParticle(particle: RendererParticle): void {
-        console.log(particle.coordinate);
         if (particle.ephemeral) {
             this.clearGridElement(particle.coordinate as GridCoordinate);
         } else {

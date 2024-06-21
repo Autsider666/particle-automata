@@ -4,12 +4,13 @@ import type {Direction} from "../../Utility/Type/Dimensional.ts";
 import {Traversal} from "../../Utility/Type/Dimensional.ts";
 import {Particle} from "../Particle/Particle.ts";
 import {ChunkCoordinate, GridCoordinate} from "../Type/Coordinate.ts";
-import {ActiveChunkList, WorldEvent} from "../World/WorldBuilder.ts";
+import {ChunkList, WorldEvent} from "../World/WorldBuilder.ts";
 import {Chunk} from "./Chunk.ts";
 
 export class World {
     private readonly chunks = new Map<string, Chunk | undefined>();
-    private readonly activeChunks: ActiveChunkList = [];
+    private readonly activeChunks: ChunkList = [];
+    private readonly dirtyChunks: ChunkList = [];
 
     constructor(
         public readonly chunkSize: number,
@@ -39,7 +40,7 @@ export class World {
         return true;
     }
 
-    moveParticle<P extends Particle = Particle>(
+    moveParticle(
         coordinate: GridCoordinate,
         direction: Direction,
     ): boolean {
@@ -49,8 +50,13 @@ export class World {
         }
         const destination = Traversal.getDestinationCoordinate<GridCoordinate>(coordinate, direction);
         const destinationChunk = this.getChunk(destination);
+        if (!destinationChunk) {
+            return false;
+        }
 
-        return !!(destinationChunk?.moveParticle<P>(currentChunk, coordinate, destination));
+        destinationChunk.moveParticle(currentChunk, coordinate, destination);
+
+        return true;
     }
 
     containsCoordinate(coordinate: GridCoordinate): boolean {
@@ -72,6 +78,12 @@ export class World {
         }
     }
 
+    public iterateDirtyChunks(callback: (chunk: Chunk, coordinate: ChunkCoordinate) => void): void {
+        for (const {chunk, coordinate} of this.dirtyChunks) {
+            callback(chunk, coordinate);
+        }
+    }
+
     public getActiveChunkIds(): number[] {
         return this.activeChunks.map(({chunk}) => chunk.id);
     }
@@ -85,7 +97,7 @@ export class World {
     }
 
     public iterateDirtyParticles<P extends Particle = Particle>(callback: (particle: P, coordinate: GridCoordinate) => void): void {
-        this.iterateActiveChunks(chunk => {
+        this.iterateDirtyChunks(chunk => {
             chunk.iterateDirtyParticles(callback);
         });
     }
@@ -167,7 +179,12 @@ export class World {
             )?.wakeUp();
         }
 
-        this.getChunk(coordinate)?.wakeUp(); //TODO move this to Manager for 1 less search?
+        const chunk = this.getChunk(coordinate);
+        if (!chunk) {
+            throw new Error('Could not awake origin chunk');
+        }
+
+        chunk.wakeUp();
     }
 
     prepareForUpdate() {
@@ -179,8 +196,25 @@ export class World {
                     coordinate: this.toCoordinate(key),
                 });
             }
+
         }
 
         this.events.emit('postStep', {activeChunks: this.activeChunks});
+    }
+
+    prepareForDraw(): void {
+        this.dirtyChunks.length = 0;
+
+        for (const [key, chunk] of this.chunks) {
+            if (chunk?.isActive()) {
+                const dirtyCount = chunk?.getAmountDirty();
+                if (dirtyCount !== undefined && dirtyCount > 0) {
+                    this.dirtyChunks.unshift({
+                        chunk,
+                        coordinate: this.toCoordinate(key),
+                    });
+                }
+            }
+        }
     }
 }

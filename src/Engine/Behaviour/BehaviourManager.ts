@@ -69,10 +69,12 @@ export abstract class BehaviourManager {
     moveParticle(coordinate: GridCoordinate, direction: Direction): boolean {
         const destination = Traversal.getDestinationCoordinate(coordinate, direction);
         if (this.chunk.containsCoordinate(coordinate) && this.chunk.containsCoordinate(destination)) {
-            return this.chunk.moveParticle<DirtyParticle>(this.chunk, coordinate, destination).dirty = true;
+            this.chunk.moveParticle(this.chunk, coordinate, destination);
+
+            return true;
         }
 
-        return this.world.moveParticle<DirtyParticle>(coordinate, direction);
+        return this.world.moveParticle(coordinate, direction);
     }
 
     wakeChunk(coordinate: GridCoordinate): void {

@@ -95,8 +95,8 @@ export class InputManager extends Actor {
         engine.input.keyboard.on("press", ({key}) => this.handleInputEvent(key, false));
         engine.input.keyboard.on("release", ({key}) => this.handleInputEvent(key, true));
 
-        engine.canvas.addEventListener('pointerenter', () => this.eventHandler.emit('focus',true));
-        engine.canvas.addEventListener('pointerleave', () => this.eventHandler.emit('focus',false));
+        engine.canvas.addEventListener('pointerenter', () => this.eventHandler.emit('focus', true));
+        engine.canvas.addEventListener('pointerleave', () => this.eventHandler.emit('focus', false));
 
 
         this.eventHandler.on('focus', (hasFocus) => this.toggleVisible(hasFocus));

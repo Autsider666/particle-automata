@@ -26,29 +26,28 @@ export class WebWorkerSimulation {
     private readonly world: World;
     private readonly events = new EventHandler<WorldEvent>();
     private readonly renderer: RealWorldWebGLRenderer;
-    // private readonly unsendChunkBuffers: SharedArrayBuffer[] = [];
-    // private readonly renderBuffer: SharedArrayBuffer;
-    // private readonly renderParticles: DecodedBuffer<typeof RenderParticleSchema>[];
 
     constructor(
         private readonly config: EngineConfig,
         private readonly updateCallback: UpdateCallback,
         canvas: OffscreenCanvas,
     ) {
-        // this.events.on('chunkCreated', ({chunk}) => this.unsendChunkBuffers.push(chunk.buffer));
-
         this.world = new SimpleWorldBuilder().build(this.config.simulation, this.events);
 
         this.simulation = new Simulation(this.world, ObviousNonsenseBehaviourManager);
         this.fpsManager = new FrameRateManager(this.update.bind(this), this.config.simulation.fps, true);
-        // const particleCount = config.outerBounds.width * config.outerBounds.height;
-        // this.renderBuffer = new SharedArrayBuffer(structSize(RenderParticleSchema) * particleCount);
-        // this.renderParticles = ArrayOfBufferBackedObjects(this.renderBuffer, RenderParticleSchema);
 
         this.renderer = new RealWorldWebGLRenderer({
             config: config.renderer,
             canvas
         });
+
+        this.renderer.render({
+            dirtyParticles: [],
+            particles: [],
+            dirtyChunks: [],
+            chunks: [],
+        }, this.world);
     }
 
     async start(): Promise<void> {
@@ -61,34 +60,22 @@ export class WebWorkerSimulation {
 
     private update(): void {
         this.simulation.update();
-        const middle = Math.round(this.config.simulation.outerBounds.width/3);
-        const range = 50;
-        for (let i = -range; i < range; i++) {
-            if (i %2 === 0) {
-                continue;
-            }
-            this.world.setParticle({x: middle+i, y: 0} as GridCoordinate, ParticleType.Sand);
-        }
-        // this.world.setParticle({x: 2, y: 0} as GridCoordinate, ParticleType.Sand);
-        // this.world.setParticle({x: 4, y: 0} as GridCoordinate, ParticleType.Sand);
-        // this.world.setParticle({x: 6, y: 0} as GridCoordinate, ParticleType.Sand);
-        // this.world.setParticle({x: 8, y: 0} as GridCoordinate, ParticleType.Sand);
-        // this.world.setParticle({x: 10, y: 0} as GridCoordinate, ParticleType.Sand);
-        // this.world.setParticle({x: 12, y: 0} as GridCoordinate, ParticleType.Sand);
-
-        this.updateCallback();
-
-        // if (this.unsendChunkBuffers.length === 0) {
-        //     return;
+        // const middle = Math.round(this.config.simulation.outerBounds.width/3);
+        // const range = 50;
+        // for (let i = -range; i < range; i++) {
+        //     if (i %2 === 0) {
+        //         continue;
+        //     }
+        //     this.world.setParticle({x: middle+i, y: 0} as GridCoordinate, ParticleType.Sand);
         // }
 
-        // this.updateCallback({
-        //     newBuffers: this.unsendChunkBuffers,
-        //     dirtyChunks: this.world.getActiveChunkIds(),
-        //     dirtyParticles: [],
-        // });
-        //
-        // this.unsendChunkBuffers.length = 0;
+        this.render();
+
+        this.updateCallback();
+    }
+
+    private render(): void {
+        this.world.prepareForDraw();
 
         this.renderer.render({
             dirtyParticles: [],

@@ -99,7 +99,7 @@ export class SimulationEngine extends BaseEventHandler<WorkerMessage & Simulatio
             this.simulation = await new Simulation(
                 this.config,
                 Comlink.proxy(this.handleSimulationUpdate.bind(this)),
-                Comlink.transfer(offscreen,[offscreen]),
+                Comlink.transfer(offscreen, [offscreen]),
             );
         } else {
             this.simulation = new WebWorkerSimulation(
@@ -147,7 +147,7 @@ export class SimulationEngine extends BaseEventHandler<WorkerMessage & Simulatio
         this.stats?.begin();
     }
 
-    private replaceParticles({coordinate:{x,y},type,radius}: ModifyParticleEvent): void {
+    private replaceParticles({coordinate: {x, y}, type, radius}: ModifyParticleEvent): void {
         const coordinate = {
             x: Math.round(x / this.config.renderer.particleSize),
             y: Math.round(y / this.config.renderer.particleSize)

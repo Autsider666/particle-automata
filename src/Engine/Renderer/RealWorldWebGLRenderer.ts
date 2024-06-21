@@ -75,6 +75,23 @@ export class RealWorldWebGLRenderer extends BaseRenderer {
         this.resize(config.viewport);
     }
 
+    protected draw(_: RendererWorld, realWorld?: World): void {
+        if (this.firstDraw) {
+            realWorld?.iterateAllParticles(this.handleRealParticle.bind(this));
+        } else {
+            realWorld?.iterateDirtyChunks(chunk => {
+                chunk.iterateDirtyParticles(this.handleRealParticle.bind(this));
+            });
+        }
+
+        this.gl.texSubImage2D(
+            this.gl.TEXTURE_2D, 0, 0, 0, this.width, this.height,
+            this.colorMode, this.gl.UNSIGNED_BYTE, this.pixels.pixelData
+        );
+        twgl.drawBufferInfo(this.gl, this.bufferInfo, this.gl.TRIANGLE_STRIP);
+        this.frame++;
+    }
+
     resize(dimensions: ViewportDimensions): void {
         super.resize(dimensions);
         this.pixels.resize(dimensions, this.backgroundColor);
@@ -102,24 +119,6 @@ export class RealWorldWebGLRenderer extends BaseRenderer {
 
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
         twgl.setBuffersAndAttributes(this.gl, this.programInfo, this.bufferInfo);
-    }
-
-    protected draw(_: RendererWorld, realWorld?: World): void {
-        if (this.firstDraw) {
-            realWorld?.iterateAllParticles(this.handleRealParticle.bind(this));
-        } else {
-            realWorld?.iterateActiveChunks(chunk =>
-                chunk.iterateDirtyParticles(this.handleRealParticle.bind(this))
-            );
-        }
-
-
-        this.gl.texSubImage2D(
-            this.gl.TEXTURE_2D, 0, 0, 0, this.width, this.height,
-            this.colorMode, this.gl.UNSIGNED_BYTE, this.pixels.pixelData
-        );
-        twgl.drawBufferInfo(this.gl, this.bufferInfo, this.gl.TRIANGLE_STRIP);
-        this.frame++;
     }
 
     private newTexture(gl: WebGLRenderingContext, pixels: Uint8Array): WebGLTexture {

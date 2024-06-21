@@ -24,7 +24,7 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
 
         this.defaultValue = index => {
             const item = defaultValue(index);
-            this.changedIndexes.add(index);
+            // this.changedIndexes.add(index);//TODO not needed, right? Because Air is already rendered even if non-existent
             this.iterateSet.add(item);
             return item;
         };
