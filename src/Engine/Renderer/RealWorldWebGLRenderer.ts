@@ -99,6 +99,9 @@ export class RealWorldWebGLRenderer extends BaseRenderer {
                 ],
             },
         });
+
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+        twgl.setBuffersAndAttributes(this.gl, this.programInfo, this.bufferInfo);
     }
 
     protected draw(_: RendererWorld, realWorld?: World): void {
@@ -111,14 +114,10 @@ export class RealWorldWebGLRenderer extends BaseRenderer {
         }
 
 
-        // Update texture
-        this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
         this.gl.texSubImage2D(
             this.gl.TEXTURE_2D, 0, 0, 0, this.width, this.height,
             this.colorMode, this.gl.UNSIGNED_BYTE, this.pixels.pixelData
         );
-        // Render
-        twgl.setBuffersAndAttributes(this.gl, this.programInfo, this.bufferInfo);
         twgl.drawBufferInfo(this.gl, this.bufferInfo, this.gl.TRIANGLE_STRIP);
         this.frame++;
     }
