@@ -1,10 +1,11 @@
 import './style.scss';
 import {Color as EXColor, Engine as EXEngine} from "excalibur";
+import {render} from "solid-js/web";
 import {EngineConfigBuilder} from "./Engine/Config/EngineConfig.ts";
 import {ParticleElement} from "./Engine/Particle/Particle.ts";
 import {Engine} from "./Engine/Engine.ts";
-import {UIManager} from "./Engine/UI/UIManager.ts";
 import {InputManager} from "./Excalibur/InputManager.ts";
+import {UI} from "./Solid/UI.tsx";
 import Stats from "./Utility/Stats/Stats.ts";
 import {URLParams} from "./Utility/URLParams.ts";
 
@@ -19,7 +20,7 @@ const engine = new Engine(rootElement, config);
 
 await engine.init();
 
-new UIManager(engine,rootElement,config.ui);
+// new UIManager(engine,rootElement,config.ui);
 
 const canvas = document.createElement('canvas');
 
@@ -58,3 +59,6 @@ document.body.appendChild(stats.dom);
 
 engine.on('preUpdate', () => stats.begin());
 engine.on('postUpdate', () => stats.end());
+
+
+render(() => <UI eventHandler={engine}/>, rootElement);

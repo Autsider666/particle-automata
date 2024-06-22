@@ -1,4 +1,5 @@
 import {defineConfig} from 'vite';
+import solidPlugin from 'vite-plugin-solid';
 
 export default defineConfig({
     esbuild: {
@@ -7,6 +8,7 @@ export default defineConfig({
         },
     },
     plugins: [
+        solidPlugin(),
         {
             name: "configure-response-headers",
             configureServer: (server) => {
