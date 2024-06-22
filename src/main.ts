@@ -2,8 +2,8 @@ import './style.scss';
 import '@snackbar/core/dist/snackbar.css';
 import {Color as EXColor, Engine as EXEngine} from "excalibur";
 import {EngineConfigBuilder} from "./Engine/Config/EngineConfig.ts";
-import {Engine} from "./Engine/Engine.ts";
 import {ParticleElement} from "./Engine/Particle/Particle.ts";
+import {Engine} from "./Engine/Engine.ts";
 import {UIManager} from "./Engine/UI/UIManager.ts";
 import {InputManager} from "./Excalibur/InputManager.ts";
 import Stats from "./Utility/Stats/Stats.ts";
@@ -20,7 +20,7 @@ const engine = new Engine(rootElement, config);
 
 await engine.init();
 
-new UIManager(engine, rootElement, config.ui);
+new UIManager(engine,rootElement,config.ui);
 
 const canvas = document.createElement('canvas');
 

@@ -14,38 +14,41 @@ body {
   position: relative;
 
   > * {
-
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
+    //right: 0;
   }
 }
 
 $borderWidth: 10px;
-$paddingRight: 0px;
+$paddingRight: 20px;
 $marginFromEdge: 20px;
 $cornerRadius: 5px;
 
 #ui {
   z-index: 100;
-
+  pointer-events: none;
   .elements {
+    pointer-events: all;
     display: inline-block;
+    margin-top: $marginFromEdge;
+    margin-left: $marginFromEdge;
 
     *.hidden + *:not(.hidden) {
       border-top-left-radius: $cornerRadius;
       border-top-right-radius: $cornerRadius;
-      margin-top: $marginFromEdge;
+      //margin-top: $marginFromEdge;
     }
 
     .element {
-      margin-left: $marginFromEdge;
+      //margin-left: $marginFromEdge;
       background: #2c3e50;
       border: 0;
       border-right: $borderWidth solid;
       border-bottom: 1px solid;
-      padding-right: $paddingRight + $borderWidth;
+      //padding-right: $paddingRight + $borderWidth;
+      padding: 10px $paddingRight + $borderWidth 25px 20px;
       color: white;
       cursor: pointer;
       width: 100%;

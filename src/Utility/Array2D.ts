@@ -15,7 +15,7 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
     constructor(
         {width, height}: Dimensions,
         defaultValue: DefaultValueGenerator<I>,
-        protected readonly offset: C = {x: 0, y: 0} as C,
+        protected readonly offset: C = {x:0,y:0} as C,
         existingStore?: I[],
     ) {
         this.arrayWidth = width;

@@ -9,7 +9,6 @@ export class UIManager {
     private readonly menuElement: HTMLDivElement;
     private selectedElement: ElementType;
 
-
     constructor(
         private readonly eventHandler: EventHandlerInterface<UIEvent>,
         rootElement: HTMLElement,
@@ -19,7 +18,6 @@ export class UIManager {
 
         this.uiElement = document.createElement('div');
         this.uiElement.id = 'ui';
-        // this.uiElement.style.zIndex = 100;
         rootElement.appendChild(this.uiElement);
 
 
