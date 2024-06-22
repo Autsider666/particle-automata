@@ -1,10 +1,7 @@
 import * as Comlink from "comlink";
 import {BaseEventHandler} from "../Utility/Excalibur/BaseEventHandler.ts";
-import {FrameRateManager} from "../Utility/FrameRateManager.ts";
-import Stats from "../Utility/Stats/Stats.ts";
 import {ViewportDimensions} from "../Utility/Type/Dimensional.ts";
 import {EngineConfig} from "./Config/EngineConfig.ts";
-import {ParticleElement} from "./Particle/Particle.ts";
 import {DynamicRenderer} from "./Renderer/DynamicRenderer.ts";
 import {RendererInterface} from "./Renderer/RendererInterface.ts";
 import {SimulationEvent} from "./Simulation/SimulationInterface.ts";
@@ -12,25 +9,13 @@ import {WebWorkerSimulation} from "./Simulation/WebWorkerSimulation.ts";
 import Worker from "./Simulation/WebWorkerSimulation.ts?worker";
 import {GridCoordinate, ViewportCoordinate} from "./Type/Coordinate.ts";
 import {WorkerMessage} from "./Type/WorkerMessage.ts";
+import {ModifyParticleEvent, UIEvent} from "./UI/Event.ts";
 
-export type ModifyParticleEvent = {
-    element: ParticleElement,
-    coordinate: ViewportCoordinate,
-    radius: number,
-};
-
-export type EngineEvent = {
-    replaceParticles: ModifyParticleEvent,
-    focus: boolean,
-}
-
-export class SimulationEngine extends BaseEventHandler<WorkerMessage & SimulationEvent & EngineEvent> {
+export class Engine extends BaseEventHandler<WorkerMessage & SimulationEvent & UIEvent> {
     private isInitialized: boolean = false;
 
     private simulation!: WebWorkerSimulation;
-    private fpsManager: FrameRateManager;
     private renderer: RendererInterface;
-    private readonly stats?: Stats;
 
     constructor(
         private readonly rootElement: HTMLElement,
@@ -40,46 +25,26 @@ export class SimulationEngine extends BaseEventHandler<WorkerMessage & Simulatio
 
         this.renderer = new DynamicRenderer(config.renderer, rootElement);
 
-        this.fpsManager = new FrameRateManager(
-            this.draw.bind(this),
-            60,
-            !this.config.simulation.startOnInit,
-        );
-
         this.events.on('replaceParticles', this.replaceParticles.bind(this));
         this.events.on('debug', this.handleDebug.bind(this));
-
-        if (config.showStats) {
-            this.stats = new Stats({
-                width: 100,
-                height: 60,
-                showAll: true,
-                defaultPanels: {
-                    MS: {
-                        decimals: 1,
-                        maxValue: 25,
-                    },
-                }
-            });
-
-            document.body.appendChild(this.stats.dom); //TODO check if it can be added to rootElement
-        }
+        this.events.on('setRunning', async (isRunning) => isRunning ? await this.start() : await this.stop());
+        this.events.on('debug', this.handleDebug.bind(this));
     }
 
     resize(viewport: ViewportDimensions): void {
         this.renderer.resize(viewport);
     }
 
-    start(): void {
+    async start(): Promise<void> {
         if (!this.isInitialized) {
             throw new Error('Can\'t start before initializing');
         }
 
-        this.fpsManager.start();
+        await this.simulation.start();
     }
 
-    stop(): void {
-        this.fpsManager.stop();
+    async stop(): Promise<void> {
+        await this.simulation.stop();
     }
 
     async init(): Promise<void> {
@@ -111,45 +76,17 @@ export class SimulationEngine extends BaseEventHandler<WorkerMessage & Simulatio
         }
 
         await this.simulation.start();
-        this.fpsManager.runCallback();
 
         this.isInitialized = true;
     }
 
-    async isRunning(): Promise<boolean> {
-        return this.fpsManager.isRunning();
-    }
-
-    private draw(): void {
-        // this.stats?.begin();
-        // this.renderer.render(this.world);
-        // this.stats?.end();
-
-        // this.world.dirtyChunks.length = 0;
-        // this.world.dirtyParticles.length = 0;
-    }
-
     private handleSimulationUpdate(): void {
-        this.stats?.end();
-        // const chunkSize = Math.pow(this.config.simulation.chunks.size, 2);
-        // const schema = ChunkSchema(chunkSize);
-        // for (const buffer of newBuffers) {
-        //     const chunk = BufferBackedObject(buffer, schema);
-        //     this.world.chunks[chunk.id] = chunk;
-        //     dirtyChunks.push(chunk.id);
-        // }
-        //
-        // for (const dirtyChunk of dirtyChunks) {
-        //     if (!this.world.dirtyChunks.includes(dirtyChunk)) {
-        //         this.world.dirtyChunks.push(dirtyChunk);
-        //     }
-        // }
-
-        this.stats?.begin();
+        this.events.emit('postUpdate', undefined);
+        this.events.emit('preUpdate', undefined);
     }
 
     private handleDebug({x, y}: ViewportCoordinate): void {
-        console.log(x,y);
+        console.log(x, y);
         const coordinate = {
             x: Math.round(x / this.config.renderer.particleSize),
             y: Math.round(y / this.config.renderer.particleSize)

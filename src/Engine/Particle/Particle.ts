@@ -91,6 +91,10 @@ class ParticleProvider {
         };
     }
 
+    public getElementTypes(): ElementType[] {
+        return Array.from(this.elements.keys());
+    }
+
     private toElementType(identifier: string, skipCheck: boolean = false): ElementType {
         const type = identifier as ElementType;
         if (skipCheck || this.elements.has(type)) {
@@ -117,7 +121,7 @@ const baseElements = {
         maxSpeed: 0,
         acceleration: 0,
         ephemeral: true,
-        canDraw: false,
+        hidden: true,
     },
     Sand: {
         color: '#dcb159',
@@ -152,4 +156,13 @@ export const ParticleElement: ElementMap = new Proxy({} as ElementMap, {
 
         return element;
     },
+    ownKeys(): ArrayLike<string> {
+        return particleProvider.getElementTypes();
+    },
+    getOwnPropertyDescriptor(): PropertyDescriptor {
+        return {
+            enumerable: true,
+            configurable: true,
+        };
+    }
 });

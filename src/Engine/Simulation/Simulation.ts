@@ -21,7 +21,7 @@ export class Simulation implements SimulationInterface {
         this.world.prepareForUpdate();
         this.world.iterateActiveChunks(this.prepareForUpdate.bind(this));
 
-        this.events.emit('preUpdate', this.world);
+        this.events.emit('preUpdate', undefined);
 
         const duplicateCheck = new Set<number>();
 

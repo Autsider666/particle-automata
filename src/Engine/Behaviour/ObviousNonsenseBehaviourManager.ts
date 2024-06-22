@@ -49,21 +49,13 @@ export class ObviousNonsenseBehaviourManager extends BehaviourManager {
     }
 
     updateParticle(particle: ObviousParticle, coordinate: GridCoordinate): void {
-        if (particle.element.ephemeral) { //TODO reset displacement?
-            return;
-        }
-
-        if (particle.element.density !== undefined && !particle.element.immovable) {
-            if (particle.element.fluid) {
-                this.updateFluid(particle, coordinate);
-            } else {
-                this.updateOther(particle, coordinate);
-            }
-
-            particle.hasBeenDisplaced = false;
+        if (particle.element.fluid) {
+            this.updateFluid(particle, coordinate);
         } else {
-            particle.hasBeenDisplaced = true;
+            this.updateOther(particle, coordinate);
         }
+
+        particle.hasBeenDisplaced = false;
     }
 
     private updateFluid(particle: ObviousParticle, coordinate: GridCoordinate): void {
