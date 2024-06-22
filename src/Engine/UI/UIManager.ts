@@ -1,32 +1,31 @@
 import DynamicEventListener from "../../Utility/DynamicEventListener.ts";
 import {EventHandlerInterface} from "../../Utility/Event/EventHandlerInterface.ts";
 import {ElementType, ParticleElement} from "../Particle/Particle.ts";
+import {BaseMenu, MenuItemData} from "./BaseMenu.ts";
 import {UIConfig} from "./Config.ts";
-import {UIEvent} from "./Event.ts";
+import {InputEvent} from "./Event.ts";
 
 export class UIManager {
     private readonly uiElement: HTMLDivElement;
-    private readonly menuElement: HTMLDivElement;
     private selectedElement: ElementType;
+    private readonly elementMenu: BaseMenu<ParticleElement>;
 
     constructor(
-        private readonly eventHandler: EventHandlerInterface<UIEvent>,
+        private readonly eventHandler: EventHandlerInterface<InputEvent>,
         rootElement: HTMLElement,
         config: UIConfig,
     ) {
-        this.selectedElement = config.defaultParticleElement;
-
         this.uiElement = document.createElement('div');
         this.uiElement.id = 'ui';
         rootElement.appendChild(this.uiElement);
 
-
-        this.menuElement = document.createElement('div');
-        this.menuElement.id = 'menu';
-        this.menuElement.classList.add('elements', 'btn-group');
-        this.uiElement.appendChild(this.menuElement);
-
-        this.updateMenu();
+        this.selectedElement = config.defaultParticleElement;
+        this.elementMenu = new BaseMenu<ParticleElement>(
+            this.uiElement,
+            this.getElementMenuItems.bind(this),
+            this.handleElementMenuItem.bind(this),
+            'elements',
+        );
 
         // DynamicEventListener.register('button#clear', 'click', () => this.eventHandler.emit('restart',undefined));
         DynamicEventListener.register('button#play', 'click', () => this.eventHandler.emit('setRunning', true));
@@ -35,52 +34,40 @@ export class UIManager {
         rootElement.addEventListener('pointerenter', () => this.eventHandler.emit('onFocus', true));
         rootElement.addEventListener('pointerleave', () => this.eventHandler.emit('onFocus', false));
 
-        this.eventHandler.on('elementSelected', this.setActiveElement.bind(this));
-
+        this.eventHandler.on('elementSelected', ({type}) => {
+            if (type !== this.selectedElement) {
+                this.selectedElement = type;
+                this.elementMenu.updateMenu();
+            }
+        });
     }
 
-    private updateMenu(): void {
+    private getElementMenuItems(): MenuItemData<ParticleElement>[] {
+        const data: MenuItemData<ParticleElement>[] = [];
         let quickSelectIndex: number = 1;
         for (const elementType in ParticleElement) {
             const element: ParticleElement = ParticleElement[elementType];
-            let elementButton = this.menuElement.querySelector<HTMLButtonElement>(`.element[data-type="${element.type}"]`);
-
-            if (!elementButton) {
-                elementButton = document.createElement('button');
-                // elementButton.innerHTML = element.type;
-                elementButton.classList.add('element');
-                elementButton.dataset.type = elementType;
-                elementButton.style.borderColor = element.color;
-
-                elementButton.addEventListener('click', () => this.setActiveElement(element));
-
-                this.menuElement.appendChild(elementButton);
-            }
 
             if (element.hidden) {
-                elementButton.classList.add('hidden');
-            } else {
-                elementButton.innerHTML = `${quickSelectIndex}: ${element.type}`;
-                quickSelectIndex++;
-                elementButton.classList.remove('hidden');
+                continue;
             }
 
-            if (this.selectedElement === elementType) {
-                elementButton.classList.add('active');
-            } else {
-                elementButton.classList.remove('active');
-            }
+            data.push({
+                key: element.type,
+                label: `${quickSelectIndex}: ${element.type}`,
+                event: element,
+                style: {borderColor: element.color},
+                active: this.selectedElement === elementType,
+            });
+
+            quickSelectIndex++;
         }
+
+        return data;
     }
 
-    private setActiveElement(element: ParticleElement): void {
-        if (element.hidden || element.type === this.selectedElement) {
-            return;
-        }
-
-        this.selectedElement = element.type;
-        this.updateMenu();
-
+    private handleElementMenuItem(element: ParticleElement): void {
         this.eventHandler.emit('elementSelected', element);
+        this.elementMenu.updateMenu();
     }
 }

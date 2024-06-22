@@ -2,7 +2,7 @@ import {Actor, Engine, Vector} from "excalibur";
 import {ParticleElement} from "../Engine/Particle/Particle.ts";
 import {SimulationEvent} from "../Engine/Simulation/SimulationInterface.ts";
 import {ViewportCoordinate} from "../Engine/Type/Coordinate.ts";
-import {UIEvent} from "../Engine/UI/Event.ts";
+import {InputEvent} from "../Engine/UI/Event.ts";
 import {EventHandlerInterface} from "../Utility/Event/EventHandlerInterface.ts";
 import {InputType} from "../Utility/Input/InputType.ts";
 import {Coordinate, Traversal} from "../Utility/Type/Dimensional.ts";
@@ -68,7 +68,7 @@ export class InputManager extends Actor {
     private readonly actionMap: Record<WorldAction, (props: { identifier: InputType, released?: boolean }) => void>;
 
     constructor(
-        private readonly eventHandler: EventHandlerInterface<SimulationEvent & UIEvent>,
+        private readonly eventHandler: EventHandlerInterface<SimulationEvent & InputEvent>,
         private selectedElement: ParticleElement,
         private readonly particleSize: number,
         private drawRadius: number = 3,

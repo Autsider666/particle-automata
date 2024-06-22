@@ -9,9 +9,9 @@ import {WebWorkerSimulation} from "./Simulation/WebWorkerSimulation.ts";
 import Worker from "./Simulation/WebWorkerSimulation.ts?worker";
 import {GridCoordinate, ViewportCoordinate} from "./Type/Coordinate.ts";
 import {WorkerMessage} from "./Type/WorkerMessage.ts";
-import {ModifyParticleEvent, UIEvent} from "./UI/Event.ts";
+import {ModifyParticleEvent, InputEvent} from "./UI/Event.ts";
 
-export class Engine extends BaseEventHandler<WorkerMessage & SimulationEvent & UIEvent> {
+export class Engine extends BaseEventHandler<WorkerMessage & SimulationEvent & InputEvent> {
     private isInitialized: boolean = false;
 
     private simulation!: WebWorkerSimulation;

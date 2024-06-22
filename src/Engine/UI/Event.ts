@@ -7,7 +7,7 @@ export type ModifyParticleEvent = {
     radius: number,
 };
 
-export type UIEvent = {
+export type InputEvent = {
     onFocus: boolean,
     elementSelected: ParticleElement,
     setRunning: boolean,
