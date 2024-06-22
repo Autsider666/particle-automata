@@ -1,3 +1,5 @@
+@use "bulma";
+
 html, body {
   height: 100%;
   overflow: hidden;
@@ -29,51 +31,51 @@ $cornerRadius: 5px;
 #ui {
   z-index: 100;
   pointer-events: none;
-  .menu {
-    pointer-events: all;
-    display: inline-block;
-    margin-top: $marginFromEdge;
-    margin-left: $marginFromEdge;
-
-    *.hidden + *:not(.hidden), :first-child {
-      border-top-left-radius: $cornerRadius;
-      border-top-right-radius: $cornerRadius;
-      //margin-top: $marginFromEdge;
-    }
-
-    .menu-item {
-      //margin-left: $marginFromEdge;
-      background: #2c3e50;
-      border: 0;
-      border-right: $borderWidth solid;
-      border-bottom: 1px solid;
-      //padding-right: $paddingRight + $borderWidth;
-      padding: 10px $paddingRight + $borderWidth 25px 10px;
-      color: white;
-      cursor: pointer;
-      width: 100%;
-      height: 30px;
-      display: block;
-
-      &:hover {
-        padding-right: $paddingRight + 0.5 * $borderWidth;
-        border-right-width: 1.5 * $borderWidth;
-      }
-
-      &.active {
-        padding-right: $paddingRight;
-        border-right-width: 2 * $borderWidth;
-        color: #1ABC9C;
-      }
-
-      &:last-child {
-        border-bottom-left-radius: $cornerRadius;
-        border-bottom-right-radius: $cornerRadius;
-      }
-
-      &.hidden {
-        display: none;
-      }
-    }
-  }
+  //.menu {
+  //  pointer-events: all;
+  //  display: inline-block;
+  //  margin-top: $marginFromEdge;
+  //  margin-left: $marginFromEdge;
+  //
+  //  *.hidden + *:not(.hidden), :first-child {
+  //    border-top-left-radius: $cornerRadius;
+  //    border-top-right-radius: $cornerRadius;
+  //    //margin-top: $marginFromEdge;
+  //  }
+  //
+  //  .menu-item {
+  //    //margin-left: $marginFromEdge;
+  //    background: #2c3e50;
+  //    border: 0;
+  //    border-right: $borderWidth solid;
+  //    border-bottom: 1px solid;
+  //    //padding-right: $paddingRight + $borderWidth;
+  //    padding: 10px $paddingRight + $borderWidth 25px 10px;
+  //    color: white;
+  //    cursor: pointer;
+  //    width: 100%;
+  //    height: 30px;
+  //    display: block;
+  //
+  //    &:hover {
+  //      padding-right: $paddingRight + 0.5 * $borderWidth;
+  //      border-right-width: 1.5 * $borderWidth;
+  //    }
+  //
+  //    &.active {
+  //      padding-right: $paddingRight;
+  //      border-right-width: 2 * $borderWidth;
+  //      color: #1ABC9C;
+  //    }
+  //
+  //    &:last-child {
+  //      border-bottom-left-radius: $cornerRadius;
+  //      border-bottom-right-radius: $cornerRadius;
+  //    }
+  //
+  //    &.hidden {
+  //      display: none;
+  //    }
+  //  }
+  //}
 }

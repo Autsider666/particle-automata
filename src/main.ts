@@ -1,5 +1,4 @@
 import './style.scss';
-import '@snackbar/core/dist/snackbar.css';
 import {Color as EXColor, Engine as EXEngine} from "excalibur";
 import {EngineConfigBuilder} from "./Engine/Config/EngineConfig.ts";
 import {ParticleElement} from "./Engine/Particle/Particle.ts";
