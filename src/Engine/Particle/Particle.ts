@@ -145,10 +145,14 @@ export const ParticleBuilder = (elementType: string): Particle => particleProvid
 
 export type PossibleElementType = string | BaseElementType | ElementType;
 
-type ElementMap = Readonly<Record<PossibleElementType, ParticleElement>>;
+type ElementMap = Readonly<Record<PossibleElementType, ParticleElement>> & {all: () => ElementType[]};
 
-export const ParticleElement: ElementMap = new Proxy({} as ElementMap, {
-    get(_target, prop: string): ParticleElement {
+export const ParticleElement: ElementMap = new Proxy({all: () => particleProvider.getElementTypes()} as ElementMap, {
+    get(_target, prop: string) {
+        if (prop === 'all') {
+            return particleProvider.getElementTypes.bind(particleProvider);
+        }
+
         const element = particleProvider.get(prop);
         if (!element) {
             throw new Error('Unknown element type: ' + prop);

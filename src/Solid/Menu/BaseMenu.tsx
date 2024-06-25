@@ -1,47 +1,85 @@
-import {createSignal, For} from "solid-js";
-import {MenuItemData} from "../../Engine/UI/BaseMenu.ts";
-import {useDirective} from "../Utility/Directive/directive.tsx";
-import {onClickOutside} from "../Utility/Directive/onClickOutside.tsx";
+import {For, JSX} from "solid-js";
+import {Dropdown} from "../Bulma/Dropdown.tsx";
+import {FasIcon, FasIconType} from "../Bulma/FasIcon.tsx";
+
+export type MenuItemData<T> = {
+    key: string,
+    label?: string,
+    color?: string,
+    event: T,
+    style?: JSX.CSSProperties,
+    className?: string[],
+    active?: boolean,
+}
 
 type BaseMenuProps<T> = {
     itemProvider: () => MenuItemData<T>[],
     handleMenuItemActivation: (event: T) => void,
+    alignRight?: boolean,
+    fasIcon?: FasIconType,
 }
 
 export const BaseMenu = <T, >({
                                   itemProvider,
-                                  handleMenuItemActivation
+                                  handleMenuItemActivation,
+                                  alignRight = false,
+                                  fasIcon = 'fa-bars'
                               }: BaseMenuProps<T>) => {
-    const [opened, setOpened] = createSignal(false);
+    const baseMenuItemClasses = 'dropdown-item';
 
-    return <div
-        class={opened() ? "dropdown is-active" : "dropdown"}
-        ref={useDirective(onClickOutside, () => setOpened(false))}
+    const generateTriggerElement = (opened: boolean) => <>{itemProvider().filter(({active}) => active).map(({color}) =>
+        <button class="button is-small" aria-haspopup="true" aria-controls="dropdown-menu"
+                style={{"border-color": color, "border-width": '3px'}}>
+            <FasIcon icon={opened ? 'fa-xmark' : fasIcon} />
+                    {/*<span class="icon is-small">*/}
+                    {/*    <i classList={{*/}
+                    {/*        fas: true,*/}
+                    {/*        'fa-xmark': opened,*/}
+                    {/*        [fasIcon]: !opened,*/}
+                    {/*    }} aria-hidden="true"></i>*/}
+                    {/*</span>*/}
+        </button>
+    )}</>;
+
+    return <Dropdown
+        generateTriggerElement={generateTriggerElement}
+        classList={{
+            'is-pulled-right': alignRight,
+        }}
+        alignRight={alignRight}
     >
-        <div class="dropdown-trigger" onClick={() => setOpened(!opened())}>
-            <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
-                <span>{itemProvider().filter(({active}) => active).map(({label, key}) => label ?? key)}</span>
-                <span class="icon is-small">
-                    <i class={opened() ? "fas fa-angle-up" : "fas fa-angle-down"} aria-hidden="true"></i>
-                </span>
-            </button>
+        <div class="dropdown-item">
+            <aside class="menu">
+                <p class="menu-label">Elements</p>
+            </aside>
         </div>
-        <div class="dropdown-menu" id="dropdown-menu" role="menu">
-            <div class="dropdown-content">
-                <div class="dropdown-item">
-                    <aside class="menu">
-                        <p class="menu-label">Elements</p>
-                        <ul class="menu-list">
-                            <For each={itemProvider()}>
-                                {({key, label, event, active}) => <li>
-                                    <button onClick={() => handleMenuItemActivation(event)}
-                                            class={active ? "is-active" : ""}>{label ?? key}</button>
-                                </li>}
-                            </For>
-                        </ul>
-                    </aside>
-                </div>
-            </div>
-        </div>
-    </div>;
+        <For each={itemProvider()}>
+            {({key, label, event, active, style}) =>
+                <button
+                    onClick={() => handleMenuItemActivation(event)}
+                    class={active ? "is-active " + baseMenuItemClasses : baseMenuItemClasses}
+                    style={style}
+                >{label ?? key}</button>}
+        </For>
+    </Dropdown>;
+
+    // return <div
+    //     classList={{
+    //         dropdown: true,
+    //         'is-active': opened(),
+    //         'is-right': align === 'right',
+    //         'is-pulled-right': align === 'right',
+    //     }}
+    //     ref={useDirective(onClickOutside, () => setOpened(false))}
+    // >
+    //     <div class="dropdown-trigger" onClick={() => setOpened(!opened())}>
+    //
+    //
+    //     </div>
+    //     <div class="dropdown-menu" id="dropdown-menu" role="menu" style={{"min-width": '0'}}>
+    //         <div class="dropdown-content">
+    //
+    //         </div>
+    //     </div>
+    // </div>;
 };

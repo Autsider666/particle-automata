@@ -1,15 +1,20 @@
-import {ParticleElement} from "../Particle/Particle.ts";
-import {ViewportCoordinate} from "../Type/Coordinate.ts";
+import {ElementType} from "../Particle/Particle.ts";
+// export type ModifyParticleEvent = {
+//     element: ParticleElement,
+//     coordinate: ViewportCoordinate,
+//     radius: number,
+// };
 
-export type ModifyParticleEvent = {
-    element: ParticleElement,
-    coordinate: ViewportCoordinate,
-    radius: number,
-};
+// export type InputEvent = {
+//     onFocus: boolean,
+//     elementSelected: ParticleElement,
+//     setRunning: boolean,
+//     replaceParticles: ModifyParticleEvent,
+// }
 
 export type InputEvent = {
-    onFocus: boolean,
-    elementSelected: ParticleElement,
-    setRunning: boolean,
-    replaceParticles: ModifyParticleEvent,
+    ShowStats: boolean,
+    SimulationRunning: boolean,
+    DrawElement: ElementType,
+    DrawSize: number,
 }

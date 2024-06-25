@@ -1,14 +1,11 @@
 import {Traversal} from "../../Utility/Type/Dimensional.ts";
 import {URLParams} from "../../Utility/URLParams.ts";
-import {ParticleElement} from "../Particle/Particle.ts";
 import {RenderMode} from "../Type/RenderMode.ts";
-import {UIConfig} from "../UI/Config.ts";
 import {RendererConfig} from "./RendererConfig.ts";
 import {SimulationConfig} from "./SimulationConfig.ts";
 
 export type EngineConfig = {
     useWorker: boolean,
-    ui: UIConfig,
     simulation: SimulationConfig,
     renderer: RendererConfig,
 };
@@ -68,10 +65,25 @@ export class EngineConfigBuilder {
 
         return {
             useWorker: URLParams.get('worker', 'boolean') ?? true,
-            ui: {
-                defaultParticleElement: ParticleElement.Sand.type,
-                showStats: URLParams.get('stats', "boolean") ?? false,
-            },
+            // ui: {
+            //     ShowStats: {
+            //         value: URLParams.get('stats', "boolean") ?? false,
+            //     },
+            //     SimulationRunning: {
+            //         value: URLParams.get('autoStart', "boolean") ?? true,
+            //     },
+            //     DrawSize: {
+            //         value: 1,
+            //         valid: {
+            //             min: 0,
+            //             max: 10
+            //         },
+            //     },
+            //     DrawElement: {
+            //         value: ParticleElement.Sand,
+            //     }
+            //
+            // },
             simulation: {
                 fps: URLParams.get('fps', "number") ?? 60,
                 startOnInit: autoStartMode,

@@ -59,7 +59,7 @@ export default class Stats {
                     defaultPanels = {},
                 }: StatsProps) {
         this.dom = document.createElement('div');
-        this.dom.style.cssText = 'position:fixed;top:0;right:0;cursor:pointer;opacity:0.9;z-index:10000';
+        this.dom.style.cssText = 'cursor:pointer;opacity:0.9;z-index:10000;';
 
         if (!showAll) {
             this.dom.addEventListener('click', event => {

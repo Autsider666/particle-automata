@@ -1,42 +1,56 @@
 import {Canvas} from "excalibur";
+import {UIConfig} from "../../Engine/Config/UIConfig.ts";
 import {ParticleElement} from "../../Engine/Particle/Particle.ts";
 import {Color} from "../../Utility/Color.ts";
 
-type PointerState = {
-    isErasing: boolean,
-    overrideWorld: boolean,
-    element: ParticleElement,
-    drawRadius: number,
-}
+// type PointerState = {
+//     isErasing: boolean,
+//     overrideWorld: boolean,
+//     element: ParticleElement,
+//     drawRadius: number,
+// }
 
 export class Pointer extends Canvas {
+    private element!:ParticleElement;
+    private drawRadius!:number;
+
     constructor(
-        public readonly radius: number,
+        public readonly maxRadius: number,
         public readonly particleSize: number,
-        private readonly state: PointerState,
+        // private readonly state: PointerState,
     ) {
         super({
-            height: 2 * (radius * particleSize),
-            width: 2 * (radius * particleSize),
+            height: 2 * (maxRadius * particleSize),
+            width: 2 * (maxRadius * particleSize),
+        });
+
+        UIConfig.subscribe((config) => {
+            this.element = ParticleElement[config.DrawElement];
+            this.drawRadius = config.DrawSize;
+
+            this.flagDirty();
+            console.log('pointer updated');
         });
     }
 
-    flagDirty(stateChanges: Partial<PointerState> = {}) {
-        super.flagDirty();
-        for (const key of Object.keys(stateChanges) as Array<keyof PointerState>) {
-            // @ts-expect-error Will look at this one later
-            this.state[key] = stateChanges[key] ?? this.state[key];
-        }
-    }
+    // flagDirty(stateChanges: Partial<PointerState> = {}) {
+    //     super.flagDirty();
+    //     for (const key of Object.keys(stateChanges) as Array<keyof PointerState>) {
+    //         // @ts-expect-error Will look at this one later
+    //         this.state[key] = stateChanges[key] ?? this.state[key];
+    //     }
+    // }
 
     execute(ctx: CanvasRenderingContext2D) {
-        const {element, drawRadius, isErasing, overrideWorld} = this.state;
-        const {color, colorVariance} = element;
+        const {color, colorVariance} = this.element;
 
-        const radiusSquared = Math.pow(drawRadius, 2);
-        const outerDarius = Math.pow(drawRadius - 1, 2);
-        for (let dX = -drawRadius; dX <= drawRadius; dX++) {
-            for (let dY = -drawRadius; dY <= drawRadius; dY++) {
+        const isErasing = false;
+        const overrideWorld = false;
+
+        const radiusSquared = Math.pow(this.drawRadius, 2);
+        const outerDarius = Math.pow(this.drawRadius - 1, 2);
+        for (let dX = -this.drawRadius; dX <= this.drawRadius; dX++) {
+            for (let dY = -this.drawRadius; dY <= this.drawRadius; dY++) {
                 if (dX * dX + dY * dY <= radiusSquared) {
                     if (!isErasing) {
                         let resultingColor: string = color;
@@ -57,7 +71,7 @@ export class Pointer extends Canvas {
                         ctx.fillStyle = '#00000000';
                     }
 
-                    ctx.fillRect((this.radius + dX) * this.particleSize, (this.radius + dY) * this.particleSize, this.particleSize, this.particleSize);
+                    ctx.fillRect((this.maxRadius + dX) * this.particleSize, (this.maxRadius + dY) * this.particleSize, this.particleSize, this.particleSize);
                 }
             }
         }

@@ -1,5 +1,4 @@
 import {Actor, Engine, Vector} from "excalibur";
-import {ParticleElement} from "../Engine/Particle/Particle.ts";
 import {SimulationEvent} from "../Engine/Simulation/SimulationInterface.ts";
 import {ViewportCoordinate} from "../Engine/Type/Coordinate.ts";
 import {InputEvent} from "../Engine/UI/Event.ts";
@@ -8,73 +7,83 @@ import {InputType} from "../Utility/Input/InputType.ts";
 import {Coordinate, Traversal} from "../Utility/Type/Dimensional.ts";
 import {Pointer} from "./Graphic/Pointer.ts";
 
-export enum WorldAction {
-    Toggle = 'Toggle',
-    Pause = 'Pause',
-    Play = 'Play',
-    Force = 'Force',
-    IncreaseDrawSize = 'IncreaseDrawSize',
-    DecreaseDrawSize = 'DecreaseDrawSize',
-    SelectElement = 'SelectElement',
+export enum InputAction {
+    // ToggleSimulation = 'ToggleSimulation',
+    // StopSimulation = 'StopSimulation',
+    // StartSimulation = 'StartSimulation',
+    // ForceDraw = 'ForceDraw',
+    // IncreaseDrawSize = 'IncreaseDrawSize',
+    // DecreaseDrawSize = 'DecreaseDrawSize',
+    // SelectElement = 'SelectElement',
     Draw = 'Draw',
-    Erase = 'Erase',
+    // Erase = 'Erase',
     Debug = 'Debug',
 }
 
-export type WorldConfig = Record<WorldAction, InputType[]>;
+export type WorldConfig = Record<InputAction, readonly InputType[]>;
 
 export class InputManager extends Actor {
     private isDrawing: boolean = false;
-    private overrideWorld: boolean = false;
-    private isErasing: boolean = false;
+    // private overrideWorld: boolean = false;
+    // private isErasing: boolean = false;
     private visibleIn: number = -1;
     private lastPointerPos?: Vector;
-    private config: WorldConfig = {
-        [WorldAction.Toggle]: [InputType.Space],
-        [WorldAction.Force]: [InputType.ShiftLeft],
-        [WorldAction.Draw]: [InputType.Left],
-        [WorldAction.IncreaseDrawSize]: [InputType.ScrollUp],
-        [WorldAction.DecreaseDrawSize]: [InputType.ScrollDown],
-        [WorldAction.SelectElement]: [
-            InputType.Digit1,
-            InputType.Digit2,
-            InputType.Digit3,
-            InputType.Digit4,
-            InputType.Digit5,
-            InputType.Digit6,
-            InputType.Digit7,
-            InputType.Digit8,
-            InputType.Digit9,
-            InputType.Digit0,
-            InputType.Numpad1,
-            InputType.Numpad2,
-            InputType.Numpad3,
-            InputType.Numpad4,
-            InputType.Numpad5,
-            InputType.Numpad6,
-            InputType.Numpad7,
-            InputType.Numpad8,
-            InputType.Numpad9,
-            InputType.Numpad0,
-        ],
-        [WorldAction.Pause]: [],
-        [WorldAction.Play]: [],
-        [WorldAction.Erase]: [InputType.ControlLeft],
-        [WorldAction.Debug]: [InputType.AltLeft]
+    private readonly config: WorldConfig = {
+        // [InputAction.ToggleSimulation]: [InputType.Space],
+        // [InputAction.ForceDraw]: [InputType.ShiftLeft],
+        [InputAction.Draw]: [InputType.Left],
+        // [InputAction.IncreaseDrawSize]: [InputType.ScrollUp],
+        // [InputAction.DecreaseDrawSize]: [InputType.ScrollDown],
+        // [InputAction.SelectElement]: [
+        //     InputType.Digit1,
+        //     InputType.Digit2,
+        //     InputType.Digit3,
+        //     InputType.Digit4,
+        //     InputType.Digit5,
+        //     InputType.Digit6,
+        //     InputType.Digit7,
+        //     InputType.Digit8,
+        //     InputType.Digit9,
+        //     InputType.Digit0,
+        //     InputType.Numpad1,
+        //     InputType.Numpad2,
+        //     InputType.Numpad3,
+        //     InputType.Numpad4,
+        //     InputType.Numpad5,
+        //     InputType.Numpad6,
+        //     InputType.Numpad7,
+        //     InputType.Numpad8,
+        //     InputType.Numpad9,
+        //     InputType.Numpad0,
+        // ],
+        // [InputAction.StopSimulation]: [],
+        // [InputAction.StartSimulation]: [],
+        // [InputAction.Erase]: [InputType.ControlLeft],
+        [InputAction.Debug]: [InputType.AltLeft]
     };
+
+    // private selectedElement!: ParticleElement;
+    // private drawRadius: number = 3;
+    // private minDrawRadius: number = 0;
+    // private maxDrawRadius: number = 50;
 
     private readonly canvas: Pointer;
 
-    private readonly actionMap: Record<WorldAction, (props: { identifier: InputType, released?: boolean }) => void>;
+    private readonly actionMap: Record<InputAction, (props: { identifier: InputType, released?: boolean }) => void>;
 
     constructor(
         private readonly eventHandler: EventHandlerInterface<SimulationEvent & InputEvent>,
-        private selectedElement: ParticleElement,
+        // private selectedElement: ParticleElement,
         private readonly particleSize: number,
-        private drawRadius: number = 3,
-        private minDrawRadius: number = 0,
+        // private drawRadius: number = 3,
+        // private minDrawRadius: number = 0,
         private maxDrawRadius: number = 50,
     ) {
+        // UIConfig.subscribe((config) => {
+        //     this.selectedElement = ParticleElement[config.DrawElement];
+        //     // this.drawRadius = config.DrawSize;
+        // });
+
         super({
             radius: particleSize,
         });
@@ -82,25 +91,19 @@ export class InputManager extends Actor {
         this.canvas = new Pointer(
             this.maxDrawRadius,
             this.particleSize,
-            {
-                isErasing: this.isErasing,
-                overrideWorld: this.overrideWorld,
-                drawRadius: this.drawRadius,
-                element: this.selectedElement,
-            }
         );
 
         this.graphics.add(this.canvas);
         this.graphics.visible = false;
 
         this.actionMap = {
-            [WorldAction.Toggle]: ({released}) => this.eventHandler.emit('setRunning', !!released),
-            [WorldAction.Pause]: () => this.eventHandler.emit('setRunning', false),
-            [WorldAction.Play]: () => this.eventHandler.emit('setRunning', true),
-            [WorldAction.Force]: ({released}) => this.toggleOverrideWorld(released === undefined ? undefined : !released),
-            [WorldAction.IncreaseDrawSize]: () => this.setDrawRadius(this.drawRadius + 1),
-            [WorldAction.DecreaseDrawSize]: () => this.setDrawRadius(this.drawRadius - 1),
-            [WorldAction.Draw]: ({released}) => {
+            // [InputAction.ToggleSimulation]: ({released}) => this.eventHandler.emit('SimulationRunning', released === true),
+            // [InputAction.StopSimulation]: () => this.eventHandler.emit('SimulationRunning', false),
+            // [InputAction.StartSimulation]: () => this.eventHandler.emit('SimulationRunning', true),
+            // [InputAction.ForceDraw]: ({released}) => this.toggleOverrideWorld(released === undefined ? undefined : !released),
+            // [InputAction.IncreaseDrawSize]: () => this.setDrawRadius(this.drawRadius + 1),
+            // [InputAction.DecreaseDrawSize]: () => this.setDrawRadius(this.drawRadius - 1),
+            [InputAction.Draw]: ({released}) => {
                 if (released === false) {
                     this.startDrawing();
                 } else if (released === true) {
@@ -109,32 +112,32 @@ export class InputManager extends Actor {
                     this.draw(this.pos);
                 }
             },
-            [WorldAction.Erase]: released => this.toggleErase(released === undefined ? undefined : !released),
-            [WorldAction.Debug]: () => this.eventHandler.emit('debug', {
+            // [InputAction.Erase]: released => this.toggleErase(released === undefined ? undefined : !released),
+            [InputAction.Debug]: () => this.eventHandler.emit('debug', {
                 x: this.pos.x,
                 y: this.pos.y
             } as ViewportCoordinate),
-            [WorldAction.SelectElement]: ({released, identifier}) => {
-                if (!released) {
-                    return;
-                }
-
-                const selectedElementIndex = parseInt(identifier.replace(/\D/g, ''));
-
-                let elementIndex: number = 0;
-                for (const elementType in ParticleElement) {
-                    if (ParticleElement[elementType].hidden) {
-                        continue;
-                    }
-
-                    elementIndex++;
-                    if (elementIndex !== selectedElementIndex) {
-                        continue;
-                    }
-
-                    this.eventHandler.emit('elementSelected', ParticleElement[elementType]);
-                }
-            }
+            // [InputAction.SelectElement]: ({released, identifier}) => {
+            //     if (!released) {
+            //         return;
+            //     }
+            //
+            //     const selectedElementIndex = parseInt(identifier.replace(/\D/g, ''));
+            //
+            //     let elementIndex: number = 0;
+            //     for (const elementType in ParticleElement) {
+            //         if (ParticleElement[elementType].hidden) {
+            //             continue;
+            //         }
+            //
+            //         elementIndex++;
+            //         if (elementIndex !== selectedElementIndex) {
+            //             continue;
+            //         }
+            //
+            //         changeUIConfig('DrawElement', elementType as ElementType);
+            //     }
+            // }
         };
     }
 
@@ -145,22 +148,22 @@ export class InputManager extends Actor {
         engine.input.keyboard.on("press", ({key}) => this.handleInputEvent(key, false));
         engine.input.keyboard.on("release", ({key}) => this.handleInputEvent(key, true));
 
-        engine.canvas.addEventListener('pointerenter', () => this.eventHandler.emit('onFocus', true));
-        engine.canvas.addEventListener('pointerleave', () => this.eventHandler.emit('onFocus', false));
+        // engine.canvas.addEventListener('pointerenter', () => this.eventHandler.emit('onFocus', true));
+        // engine.canvas.addEventListener('pointerleave', () => this.eventHandler.emit('onFocus', false));
 
 
-        this.eventHandler.on('onFocus', (hasFocus) => this.toggleVisible(hasFocus));
-        this.eventHandler.on('elementSelected', this.changeElement.bind(this));
+        // this.eventHandler.on('onFocus', (hasFocus) => this.toggleVisible(hasFocus));
+        // this.eventHandler.on('elementSelected', this.changeElement.bind(this));
     }
 
-    updatePointer(): void {
-        this.canvas.flagDirty({
-            isErasing: this.isErasing,
-            overrideWorld: this.overrideWorld,
-            drawRadius: this.drawRadius,
-            element: this.selectedElement,
-        });
-    }
+    // updatePointer(): void {
+    //     // this.canvas.flagDirty({
+    //     //     isErasing: this.isErasing,
+    //     //     overrideWorld: this.overrideWorld,
+    //     //     drawRadius: this.drawRadius,
+    //     //     element: this.selectedElement,
+    //     // });
+    // }
 
     toggleVisible(visible?: boolean): void {
         const isVisible = visible === undefined ? !(this.visibleIn < 0) : visible;
@@ -174,21 +177,21 @@ export class InputManager extends Actor {
         }
     }
 
-    setDrawRadius(radius: number): void {
-        this.drawRadius = Math.max(Math.min(radius, this.maxDrawRadius), this.minDrawRadius);
+    // setDrawRadius(radius: number): void {
+    //     this.drawRadius = Math.max(Math.min(radius, this.maxDrawRadius), 0);
+    //
+    //     this.updatePointer();
+    // }
 
-        this.updatePointer();
-    }
-
-    changeElement(element: ParticleElement): void {
-        if (!element || element.hidden || this.selectedElement === element) {
-            return;
-        }
-
-        this.selectedElement = element;
-
-        this.updatePointer();
-    }
+    // changeElement(element: ParticleElement): void {
+    //     if (!element || element.hidden || this.selectedElement === element) {
+    //         return;
+    //     }
+    //
+    //     this.selectedElement = element;
+    //
+    //     this.updatePointer();
+    // }
 
     onPreUpdate(engine: Engine) {
         this.pos = engine.input.pointers.primary.lastWorldPos;
@@ -212,34 +215,35 @@ export class InputManager extends Actor {
         this.lastPointerPos = this.pos.clone();
     }
 
-    private toggleOverrideWorld(force?: boolean): void {
-        if (force === undefined) {
-            this.overrideWorld = !this.overrideWorld;
-        } else {
-            this.overrideWorld = force;
-        }
+    // private toggleOverrideWorld(force?: boolean): void {
+    //     if (force === undefined) {
+    //         this.overrideWorld = !this.overrideWorld;
+    //     } else {
+    //         this.overrideWorld = force;
+    //     }
+    //
+    //     this.updatePointer();
+    // }
 
-        this.updatePointer();
-    }
-
-    private toggleErase(force?: boolean): void {
-        if (force === undefined) {
-            this.isErasing = !this.isErasing;
-        } else {
-            this.isErasing = force;
-        }
-
-        this.updatePointer();
-    }
+    // private toggleErase(force?: boolean): void {
+    //     if (force === undefined) {
+    //         this.isErasing = !this.isErasing;
+    //     } else {
+    //         this.isErasing = force;
+    //     }
+    //
+    //     this.updatePointer();
+    // }
 
     private draw({x, y}: Coordinate): void {
-        this.eventHandler.emit('replaceParticles', {
-            element: this.isErasing ? ParticleElement.Air : this.selectedElement,
-            coordinate: {x, y} as ViewportCoordinate, // To prevent vectors
-            radius: this.drawRadius,
-            // probability: Elements[this.selectedElement].drawProbability,
-            // force: this.overrideWorld || this.isErasing,
-        });
+        console.log('drawing',x,y);
+        // this.eventHandler.emit('replaceParticles', {
+        //     element: this.isErasing ? ParticleElement.Air : this.selectedElement,
+        //     coordinate: {x, y} as ViewportCoordinate, // To prevent vectors
+        //     radius: this.drawRadius,
+        //     // probability: Elements[this.selectedElement].drawProbability,
+        //     // force: this.overrideWorld || this.isErasing,
+        // });
     }
 
     private startDrawing(): void {
@@ -260,7 +264,7 @@ export class InputManager extends Actor {
     }
 
     private handleInputEvent(identifier: InputType, released?: boolean): void {
-        for (const action of Object.keys(this.config) as WorldAction[]) {
+        for (const action of Object.keys(this.config) as InputAction[]) {
             for (const inputType of this.config[action]) {
                 if (identifier === inputType) {
                     this.actionMap[action]({released, identifier});

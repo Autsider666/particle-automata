@@ -9,7 +9,7 @@ import {WebWorkerSimulation} from "./Simulation/WebWorkerSimulation.ts";
 import Worker from "./Simulation/WebWorkerSimulation.ts?worker";
 import {GridCoordinate, ViewportCoordinate} from "./Type/Coordinate.ts";
 import {WorkerMessage} from "./Type/WorkerMessage.ts";
-import {ModifyParticleEvent, InputEvent} from "./UI/Event.ts";
+import {InputEvent} from "./UI/Event.ts";
 
 export class Engine extends BaseEventHandler<WorkerMessage & SimulationEvent & InputEvent> {
     private isInitialized: boolean = false;
@@ -25,9 +25,9 @@ export class Engine extends BaseEventHandler<WorkerMessage & SimulationEvent & I
 
         this.renderer = new DynamicRenderer(config.renderer, rootElement);
 
-        this.events.on('replaceParticles', this.replaceParticles.bind(this));
+        // this.events.on('replaceParticles', this.replaceParticles.bind(this));
         this.events.on('debug', this.handleDebug.bind(this));
-        this.events.on('setRunning', async (isRunning) => isRunning ? await this.start() : await this.stop());
+        this.events.on('SimulationRunning', async (isRunning) => isRunning ? await this.start() : await this.stop());
         this.events.on('debug', this.handleDebug.bind(this));
     }
 
@@ -94,40 +94,40 @@ export class Engine extends BaseEventHandler<WorkerMessage & SimulationEvent & I
         this.simulation.whatParticleAmILookingAt(coordinate);
     }
 
-    private replaceParticles({coordinate: {x, y}, element, radius}: ModifyParticleEvent): void {
-        const coordinate = {
-            x: Math.round(x / this.config.renderer.particleSize),
-            y: Math.round(y / this.config.renderer.particleSize)
-        } as GridCoordinate;
+    // private replaceParticles({coordinate: {x, y}, element, radius}: ModifyParticleEvent): void {
+    //     const coordinate = {
+    //         x: Math.round(x / this.config.renderer.particleSize),
+    //         y: Math.round(y / this.config.renderer.particleSize)
+    //     } as GridCoordinate;
+    //
+    //     const particleCoordinates: GridCoordinate[] = [];
+    //     this.iterateAroundCoordinate(coordinate, coordinate => particleCoordinates.push(coordinate), radius);
+    //     this.simulation.replaceParticles(element.type, particleCoordinates);
+    // }
 
-        const particleCoordinates: GridCoordinate[] = [];
-        this.iterateAroundCoordinate(coordinate, coordinate => particleCoordinates.push(coordinate), radius);
-        this.simulation.replaceParticles(element.type, particleCoordinates);
-    }
-
-    private iterateAroundCoordinate(
-        {x, y}: GridCoordinate,
-        callback: (coordinate: GridCoordinate) => void,
-        radius: number,
-        probability: number = 1,
-    ) {
-        const radiusSquared = radius * radius;
-        for (let dX = -radius; dX <= radius; dX++) {
-            const resultingX = x + dX;
-            if (resultingX < 0 || resultingX >= this.config.simulation.outerBounds.width) {
-                continue;
-            }
-
-            for (let dY = -radius; dY <= radius; dY++) {
-                const resultingY = y + dY;
-                if (resultingY < 0 || resultingY >= this.config.simulation.outerBounds.height) {
-                    continue;
-                }
-
-                if (dX * dX + dY * dY <= radiusSquared && (probability >= 1 || Math.random() > 0.5)) {
-                    callback({x: resultingX, y: resultingY} as GridCoordinate);
-                }
-            }
-        }
-    }
+    // private iterateAroundCoordinate(
+    //     {x, y}: GridCoordinate,
+    //     callback: (coordinate: GridCoordinate) => void,
+    //     radius: number,
+    //     probability: number = 1,
+    // ) {
+    //     const radiusSquared = radius * radius;
+    //     for (let dX = -radius; dX <= radius; dX++) {
+    //         const resultingX = x + dX;
+    //         if (resultingX < 0 || resultingX >= this.config.simulation.outerBounds.width) {
+    //             continue;
+    //         }
+    //
+    //         for (let dY = -radius; dY <= radius; dY++) {
+    //             const resultingY = y + dY;
+    //             if (resultingY < 0 || resultingY >= this.config.simulation.outerBounds.height) {
+    //                 continue;
+    //             }
+    //
+    //             if (dX * dX + dY * dY <= radiusSquared && (probability >= 1 || Math.random() > 0.5)) {
+    //                 callback({x: resultingX, y: resultingY} as GridCoordinate);
+    //             }
+    //         }
+    //     }
+    // }
 }

@@ -1,4 +1,5 @@
 @use "bulma";
+@use "@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css";
 
 html, body {
   height: 100%;
@@ -28,54 +29,71 @@ $paddingRight: 10px;
 $marginFromEdge: 20px;
 $cornerRadius: 5px;
 
+$menuMargin: 5px;
+$menuItemMargin: 10px;
+
 #ui {
   z-index: 100;
   pointer-events: none;
-  //.menu {
-  //  pointer-events: all;
-  //  display: inline-block;
-  //  margin-top: $marginFromEdge;
-  //  margin-left: $marginFromEdge;
-  //
-  //  *.hidden + *:not(.hidden), :first-child {
-  //    border-top-left-radius: $cornerRadius;
-  //    border-top-right-radius: $cornerRadius;
-  //    //margin-top: $marginFromEdge;
-  //  }
-  //
-  //  .menu-item {
-  //    //margin-left: $marginFromEdge;
-  //    background: #2c3e50;
-  //    border: 0;
-  //    border-right: $borderWidth solid;
-  //    border-bottom: 1px solid;
-  //    //padding-right: $paddingRight + $borderWidth;
-  //    padding: 10px $paddingRight + $borderWidth 25px 10px;
-  //    color: white;
-  //    cursor: pointer;
-  //    width: 100%;
-  //    height: 30px;
-  //    display: block;
-  //
-  //    &:hover {
-  //      padding-right: $paddingRight + 0.5 * $borderWidth;
-  //      border-right-width: 1.5 * $borderWidth;
-  //    }
-  //
-  //    &.active {
-  //      padding-right: $paddingRight;
-  //      border-right-width: 2 * $borderWidth;
-  //      color: #1ABC9C;
-  //    }
-  //
-  //    &:last-child {
-  //      border-bottom-left-radius: $cornerRadius;
-  //      border-bottom-right-radius: $cornerRadius;
-  //    }
-  //
-  //    &.hidden {
-  //      display: none;
-  //    }
+}
+
+.menu-nav-bar {
+  pointer-events: none;
+  margin-top: $menuMargin;
+  margin-left: $menuMargin;
+  margin-right: $menuMargin;
+
+  .column {
+    &.right > :not(:first-child) {
+      margin-right: $menuItemMargin;
+    }
+
+    &.left > :not(:first-child) {
+      margin-left: $menuItemMargin;
+    }
+  }
+
+  //.left {
+  //  &> {
+  //    margin-top: 10px;
+  //    margin-left: 10px;
   //  }
   //}
+  //
+  //.center {
+  //  margin-top: 10px;
+  //}
+  //
+  //.right {
+  //  margin-left: 0;
+  //  margin-right: 10px;
+  //}
+
+  .dropdown {
+    pointer-events: all;
+
+    //&.is-right {
+    //  margin-left: 0;
+    //  margin-right: 10px;
+    //}
+  }
+}
+
+.dropdown {
+  &.is-right {
+    left: auto !important;
+    right: 0;
+  }
+}
+
+.disable-pointer {
+  pointer-events: none;
+
+  * {
+    pointer-events: all;
+  }
+}
+
+.enable-pointer {
+  pointer-events: all;
 }
